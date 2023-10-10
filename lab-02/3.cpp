@@ -34,9 +34,8 @@ int main(){
             maxGuess = codeGuess - 1;
         }
         else{
-            minGuess = codeGuess + 1;
+            minGuess = codeGuess +  1;
         }
-
     }
 
     std::cout << "Your number is " << codeGuess << std::endl;
