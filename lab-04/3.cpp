@@ -2,5 +2,5 @@
 #include <cmath>
 
 int main(){
-    
+        
 }
