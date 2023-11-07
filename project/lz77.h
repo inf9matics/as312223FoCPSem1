@@ -8,7 +8,7 @@ class lz77{
     std::map<std::string, std::string> cliArguments;
     int cliArgumentsCount;
     std::string helpDialog = "Lorem ipsum dolores";
-    bool correct;
+    bool prepared;
 
     bool checkParemeters(){
         if(this->cliArguments.size() == 0){
@@ -25,7 +25,7 @@ class lz77{
         return true;
     }
 
-    void convertToStringMap(){
+    void prepareStringMap(){
         for(int i=1; i<this->cliArgumentsCount-1; i+=2){
             this->cliArguments.insert((std::string(this->cliArgumentsPointers[i])), (std::string(this->cliArgumentsPointers[i+1])));
         }
@@ -45,9 +45,9 @@ class lz77{
         this->cliArgumentsPointers = argv;
         this->cliArgumentsCount = argc;
 
-        this->convertToStringMap();
+        this->prepareStringMap();
         if(this->checkParemeters()){
-            this->correct = true;
+            this->prepared = true;
         }
     }
 
