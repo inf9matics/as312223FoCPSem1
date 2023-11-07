@@ -2,6 +2,7 @@
 *
 !*/
 !*.cpp
+!*.h
 .vscode/
 code.code-workspace
 
