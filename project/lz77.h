@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 #include <map>
 #include <iostream>
 
@@ -9,6 +10,7 @@ class lz77{
     int cliArgumentsCount;
     std::string helpDialog = "Lorem ipsum dolores";
     bool prepared;
+    std::vector<bool> bitset;
 
     bool checkParemeters(){
         if(this->cliArguments.size() == 0){
@@ -49,9 +51,19 @@ class lz77{
         if(this->checkParemeters()){
             this->prepared = true;
         }
+
+
     }
 
+    void setBitset(std::vector<bool> x){
+        this->bitset = x;
+    }
+    
     void compress(){
 
+    }
+
+    void decompress(){
+        
     }
 };
