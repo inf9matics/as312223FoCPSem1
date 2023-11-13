@@ -1,18 +1,8 @@
-#include <string>
-#include <vector>
+#include <cmath>
 
-std::vector<bool> convertCharBinaryVectorToBoolVector(std::vector<char> chars){
-    std::vector<bool> bools;
-
-    for(int i=0; i<chars.size(); i++){
-        char c = chars.at(i);
-        if(c == '0'){
-            bools.push_back(false);
-        }
-        else{
-            bools.push_back(true);
-        }
+int minOrHigher(int n, int min){
+    if(n < min){
+        return min;
     }
-
-    return bools;
+    return n;
 }
