@@ -1,6 +1,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <vector>
 
 std::string basicStringToString(char *basic_string){
     std::string string = basic_string;
@@ -21,35 +22,29 @@ class CliArguments{
         }
     }
 
-    static const int requiredParametersSize = 5;
-    std::string requiredParameters[requiredParametersSize] = {
-        "-i",
-        "-o",
-        "-t",
-        "-n",
-        "-k"
-    };
+    std::vector<std::string> requiredParameters;
 
     bool checkParemeters(){
-    if(this->cliArguments.size() == 0){
-        std::clog << this->helpDialog;
-        return false;
-    }
-
-    for(int i=0; i<this->requiredParametersSize; i++){
-        if(this->cliArguments.count(this->requiredParameters[i]) == 0){
-            std::clog << this->requiredParameters[i] << " is either missing";
+        if(this->cliArguments.size() == 0){
+            std::clog << this->helpDialog;
             return false;
         }
-    }
 
+        for(int i=0; i<this->requiredParameters.size(); i++){
+            if(this->cliArguments.count(this->requiredParameters.at(i)) == 0){
+                std::clog << this->requiredParameters.at(i) << " is missing";
+                return false;
+            }
+        }
         return true;
     }
 
     public:
-    CliArguments(int argc, char **argv){
+    CliArguments(int argc, char **argv, std::vector<std::string> upstreamParameters){
         this->cliArgumentsCount = argc;
         this->cliArgumentsPointers = argv;
+
+        this->requiredParameters = upstreamParameters;
 
         this->prepareStringMap();
 

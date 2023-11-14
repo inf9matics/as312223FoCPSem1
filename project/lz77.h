@@ -1,52 +1,92 @@
 #include "utilities.h"
+#include "cli.h"
 
 #include <string>
+#include <cstring>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <fstream>
 
-class lz77{
+class Lz77 {
     private:
-    std::string raw;
-    std::string compressed;
     int historyBufferSize;
     int inputBufferSize;
-    std::vector<std::string> patterns;
-    std::vector<int> patternsOccurences;
+    std::ifstream inputFileStream;
+    std::ofstream outputFileStream;
 
-    public:
-    lz77(int inputBufferSize, int historyBufferSize){
-        this->inputBufferSize = inputBufferSize;
-        this->historyBufferSize = historyBufferSize;
+    std::vector<std::string> requiredParameters {
+        "-i",
+        "-o",
+        "-t",
+        "-n",
+        "-k"
+    };
+
+    CliArguments *cliArguments;
+    
+    void openInputFile(){
+        try{
+            this->inputFileStream.open(this->cliArguments->at("-i"), std::ios::binary);
+            // this->inputFileStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        }
+        catch(const std::ifstream::failure &e){
+            std::cerr << e.what();
+        }      
     }
 
-    void setRaw(std::string x){
-        this->raw = x;
+    void openOutput(){
+        try{
+            this->outputFileStream.open(this->cliArguments->at("-o"), std::ios::binary);
+            // this->outputFileStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        }
+        catch(const std::ifstream::failure &e){
+            std::cerr << e.what();
+        }      
+    }
+
+    public:
+    Lz77(int argc, char **argv){
+        this->cliArguments = new CliArguments {argc, argv, this->requiredParameters};
+
+        this->inputBufferSize = std::stoi(this->cliArguments->at("-k"));
+        this->historyBufferSize = std::stoi(this->cliArguments->at("-n"));
     }
     
     void compress(){
-        int currentCharIndex = 0;
-        std::string currentString;
-        while(currentCharIndex < this->raw.size()){
-            bool foundPattern = false;
-            currentString = this->raw.substr(currentCharIndex, currentCharIndex+1);
-            for(int i = minOrHigher(currentCharIndex-this->historyBufferSize, 0); i<currentCharIndex; i++){
-                if(currentString == this->raw.substr(i, i+1)){
-                    std::string tempString;
-                    bool longerPattern = true;
-                    for(int j = 1; j<this->inputBufferSize && longerPattern; j++){
-                        tempString = this->raw.substr(i, j);
-                        if()
+        if(this->cliArguments->isPrepared()){
+            this->openInputFile();
+            this->openOutput();
+            char currentByte;
+            char historyBuffer[this->historyBufferSize + this->inputBufferSize + 1];
+            for(int i=0; i<this->historyBufferSize; i++){
+                historyBuffer[i] = inputFileStream.get();
+            }
+            inputFileStream.get(currentByte);
+            for(int j=0; j<this->inputBufferSize; j++){
+                historyBuffer[this->historyBufferSize+1+j] = inputFileStream.get();
+            }
+
+            while(this->inputFileStream.get(currentByte)){
+                for(int i=0; i<this->historyBufferSize; i++){
+                    if (historyBuffer[i] == currentByte){
+                        bool patternDone = false;
+                        for(int j=1; j<this->inputBufferSize && !patternDone; j++){
+                            if(historyBuffer[i+j] == currentByte){
+
+                            }
+                        }
+                    }
+                    else{
+                        std::memmove(&historyBuffer[0], &historyBuffer[1], (this->historyBufferSize - 1) * sizeof(historyBuffer[0]));
                     }
                 }
             }
+
+            this->inputFileStream.close();
         }
-    }
-
-    void setCompressed(std::vector<std::string> x){
-
     }
 
     void decompress(){
