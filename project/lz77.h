@@ -1,4 +1,4 @@
-#include "utilities.h"
+// #include "utilities.h"
 #include "cli.h"
 
 #include <string>
@@ -14,6 +14,7 @@ class Lz77 {
     private:
     int historyBufferSize;
     int inputBufferSize;
+    int bufferSize;
     std::ifstream inputFileStream;
     std::ofstream outputFileStream;
 
@@ -53,6 +54,7 @@ class Lz77 {
 
         this->inputBufferSize = std::stoi(this->cliArguments->at("-k"));
         this->historyBufferSize = std::stoi(this->cliArguments->at("-n"));
+        this->bufferSize = this->inputBufferSize + this->historyBufferSize + 1;
     }
     
     void compress(){
@@ -60,28 +62,30 @@ class Lz77 {
             this->openInputFile();
             this->openOutput();
             char currentByte;
-            char historyBuffer[this->historyBufferSize + this->inputBufferSize + 1];
-            for(int i=0; i<this->historyBufferSize; i++){
-                historyBuffer[i] = inputFileStream.get();
-            }
-            inputFileStream.get(currentByte);
-            for(int j=0; j<this->inputBufferSize; j++){
-                historyBuffer[this->historyBufferSize+1+j] = inputFileStream.get();
-            }
+            std::string buffer;
+            std::string slidingWindow;
+            int rawLength = 0;
+
+            char **cbuffer;
+            inputFileStream.read(cbuffer, (this->bufferSize)*);
 
             while(this->inputFileStream.get(currentByte)){
-                for(int i=0; i<this->historyBufferSize; i++){
-                    if (historyBuffer[i] == currentByte){
+                bool patternFound = false;
+                int patternLength;
+                for(int i=0; i<historyBufferSize && !patternFound; i++){
+                    if(buffer[historyBufferSize+1] == buffer[i]){
+                        patternFound = true;
                         bool patternDone = false;
                         for(int j=1; j<this->inputBufferSize && !patternDone; j++){
-                            if(historyBuffer[i+j] == currentByte){
-
+                            if(!buffer[i+j] == buffer[historyBufferSize+1]){
+                                patternDone = true;
+                                patternLength = j-1;
                             }
                         }
                     }
-                    else{
-                        std::memmove(&historyBuffer[0], &historyBuffer[1], (this->historyBufferSize - 1) * sizeof(historyBuffer[0]));
-                    }
+                }
+                if(!patternFound){
+
                 }
             }
 
