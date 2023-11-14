@@ -1,5 +1,5 @@
-// #include "utilities.h"
 #include "cli.h"
+#include "utilities.h"
 
 #include <string>
 #include <cstring>
@@ -14,7 +14,7 @@ class Lz77 {
     private:
     int historyBufferSize;
     int inputBufferSize;
-    int bufferSize;
+    int slidingWindowSize;
     std::ifstream inputFileStream;
     std::ofstream outputFileStream;
 
@@ -52,9 +52,11 @@ class Lz77 {
     Lz77(int argc, char **argv){
         this->cliArguments = new CliArguments {argc, argv, this->requiredParameters};
 
-        this->inputBufferSize = std::stoi(this->cliArguments->at("-k"));
-        this->historyBufferSize = std::stoi(this->cliArguments->at("-n"));
-        this->bufferSize = this->inputBufferSize + this->historyBufferSize + 1;
+        if(this->cliArguments->isPrepared()){
+                this->inputBufferSize = std::stoi(this->cliArguments->at("-k"));
+            this->historyBufferSize = std::stoi(this->cliArguments->at("-n"));
+            this->slidingWindowSize = this->inputBufferSize + this->historyBufferSize + 1;
+        }
     }
     
     void compress(){
@@ -63,30 +65,38 @@ class Lz77 {
             this->openOutput();
             char currentByte;
             std::string buffer;
+            std::string outputBuffer;
             std::string slidingWindow;
             int rawLength = 0;
+            {
+                char *cbuffer;
+                inputFileStream.read(cbuffer, (this->slidingWindowSize)*4);
+                buffer = basicStringToString(cbuffer);
+            }
 
-            char **cbuffer;
-            inputFileStream.read(cbuffer, (this->bufferSize)*);
-
-            while(this->inputFileStream.get(currentByte)){
-                bool patternFound = false;
-                int patternLength;
-                for(int i=0; i<historyBufferSize && !patternFound; i++){
-                    if(buffer[historyBufferSize+1] == buffer[i]){
-                        patternFound = true;
-                        bool patternDone = false;
-                        for(int j=1; j<this->inputBufferSize && !patternDone; j++){
-                            if(!buffer[i+j] == buffer[historyBufferSize+1]){
-                                patternDone = true;
-                                patternLength = j-1;
+            std::clog << "<Input file>" << std::endl << buffer << "</Input file>" << std::endl;
+            
+            int currentStart = 0;
+            slidingWindow.append(buffer.substr(0, this->slidingWindowSize));
+            outputBuffer.append(slidingWindow);
+            while(this->inputFileStream.eof()){
+                while(!buffer.empty()){
+                    int currentPosition = maxOrLower(this->historyBufferSize, slidingWindow.length());
+                    for(int i=0; i<currentPosition; i++){
+                        if(slidingWindow.at(currentPosition) == slidingWindow.at(i)){
+                            bool patternDone = false;
+                            int patternLength;
+                            std::string patternLink;
+                            for(int j=1; j<this->inputBufferSize && !patternDone; j++){
+                                if(!slidingWindow.at(currentPosition+j == slidingWindow.at(i+j))){
+                                    patternDone = true;
+                                    patternLength = j-1;
+                                }
                             }
+                            if(patternLength < patternLink.length())
                         }
                     }
-                }
-                if(!patternFound){
-
-                }
+                buffer.clear();
             }
 
             this->inputFileStream.close();

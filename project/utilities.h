@@ -6,3 +6,10 @@ int minOrHigher(int n, int min){
     }
     return n;
 }
+
+int maxOrLower(int n, int max){
+    if(n > max){
+        return max;
+    }
+    return n;
+}
