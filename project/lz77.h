@@ -93,7 +93,16 @@ class Lz77 {
                                     patternLength = j-1;
                                 }
                             }
-                            if(patternLength < patternLink.length())
+                            patternLink.append("<");
+                            patternLink.append(std::string{});
+                            patternLink.append(",");
+                            patternLink.append();
+                            patternLink.append(">");
+                            if(patternLength < patternLink.length()){
+                                outputBuffer.append(patternLink);
+                            }
+                            else{
+
                         }
                     }
                 buffer.clear();
