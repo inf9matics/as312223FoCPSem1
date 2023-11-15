@@ -18,6 +18,13 @@ class Lz77 {
     int bufferSize;
     int futureBufferSize;
     std::list<char> historyBuffer;
+
+    void historyBufferMakeSpace(){
+        if(this->historyBuffer.size() >= this->historyBufferSize){
+            this->historyBuffer.pop_front();
+        }
+    }
+
     std::list<char> futureBuffer;
 
     bool log;
@@ -73,8 +80,10 @@ class Lz77 {
         if(this->cliArguments->isPrepared()){
             this->openInputFile();
             this->openOutputFile();
+            this->historyBuffer.clear();
+            this->futureBuffer.clear();
 
-            for(int i=0; i<this->inputBufferSize && !this->inputFileStream.eof(); i++){
+            for(int i=0; i<this->inputBufferSize-1 && !this->inputFileStream.eof(); i++){
                 this->futureBuffer.push_back(this->inputFileStream.get());
             }
 
@@ -110,21 +119,15 @@ class Lz77 {
 
                     std::advance(historyBufferIterator, 1);
                 }
-                if(this->historyBuffer.size() >= this->historyBufferSize){
-                    this->historyBuffer.pop_front();
-                }
+                this->historyBufferMakeSpace();
                 if(!patternFound){
                     this->outputFileStream << '>' << this->futureBuffer.front();
-                    if(this->historyBuffer.size() >= this->historyBufferSize){
-                        this->historyBuffer.pop_front();
-                    }
+                    this->historyBufferMakeSpace();
                     this->historyBuffer.push_back(this->futureBuffer.front());
                     this->futureBuffer.pop_front();
                 }else{
                     for(int i=0; i<patternLength; i++){
-                        if(this->historyBuffer.size() >= this->historyBufferSize){
-                            this->historyBuffer.pop_front();
-                        }
+                        this->historyBufferMakeSpace();
                         this->historyBuffer.push_back(this->futureBuffer.front());
                         this->futureBuffer.pop_front();
                     }
@@ -139,53 +142,34 @@ class Lz77 {
         if(this->cliArguments->isPrepared()){
             this->openInputFile();
             this->openOutputFile();
+            this->historyBuffer.clear();
+            this->futureBuffer.clear();
 
-            while(!this->inputFileStream.eof()){
+            for(int i=0; i<this->futureBufferSize-1; i++){
+                this->futureBuffer.push_back(this->inputFileStream.get());
+            }
+
+            while(!this->futureBuffer.empty()){
+                if(!this->inputFileStream.eof()){
+                    this->futureBuffer.push_back(this->inputFileStream.get());
+                }
+
+                std::list<char>::iterator historyBufferIterator = this->historyBuffer.begin();
+                std::list<char>::iterator futureBufferIterator = this->futureBuffer.begin();
+
+                if(*futureBufferIterator == '>'){
+                    std::advance(futureBufferIterator, 1);
+                    this->historyBufferMakeSpace();
+                    this->historyBuffer.push_back(*futureBufferIterator);
+                }
+                else if(*futureBufferIterator == '<'){
+
+                }
+
                 char currentCharacter;
-                this->inputFileStream.get(currentCharacter);
-                if(currentCharacter == '>'){
-                    this->inputFileStream.get(currentCharacter);
-                    std::clog << "I'm writing a raw byte: " << currentCharacter << std::endl;
-                    this->outputFileStream << currentCharacter;
-                }
-                else if(currentCharacter == '<'){
-                    std::string distanceString = "";
-                    long distance;
-                    std::string lengthString = "";
-                    long length;
-                    this->inputFileStream.get(currentCharacter);
-                    std::clog << "I'm doint something AA " << currentCharacter << std::endl;
-                    while(currentCharacter != ','){
-                        std::clog << "I'm doint something A " << currentCharacter << std::endl;
-                        distanceString += currentCharacter;
-                        this->inputFileStream.get(currentCharacter);
-                    }
-                    this->inputFileStream.get(currentCharacter);
-                    std::clog << "I'm doint something AB " << currentCharacter << std::endl;
-                    while(!(currentCharacter == '>' || currentCharacter == '<') && !this->inputFileStream.eof()){
-                        std::clog << "I'm doint something B " << currentCharacter << std::endl;
-                        lengthString += currentCharacter;
-                        this->inputFileStream.get(currentCharacter);
-                    }
-                    std::clog << distanceString << " " << lengthString << std::endl;
-                    distance = std::stol(distanceString);
-                    distance = distance * (-1);
-                    std::clog << distance << std::endl;
-                    length = std::stol(lengthString);
-                    std::ifstream outputFileStreamInput;
-                    this->outputFileStream.close();
-                    outputFileStreamInput.open(this->argument("-o"), std::ios::binary);
-                    outputFileStreamInput.seekg(distance, std::ios_base::end);this->outputFileStream.close();
-                    for(int i=0; i< length; i++){
-                        outputFileStreamInput.get(currentCharacter);
-                        outputFileStreamInput.close();
-                        this->openOutputFile();
-                        std::clog << "I'm doint something C: " << currentCharacter << " chuj" << std::endl;
-                        this->outputFileStream << currentCharacter;
-                        this->outputFileStream.close();
-                        outputFileStreamInput.open(this->argument("-o"), std::ios::binary);
-                    }
-                }
+                currentCharacter = this->futureBuffer.front();
+
+
             }
 
             this->inputFileStream.close();
