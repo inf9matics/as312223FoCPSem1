@@ -19,10 +19,12 @@ class Lz77 {
     int futureBufferSize;
     std::list<char> historyBuffer;
 
-    void historyBufferMakeSpace(){
+    bool historyBufferMakeSpace(){
         if(this->historyBuffer.size() >= this->historyBufferSize){
             this->historyBuffer.pop_front();
+            return true;
         }
+        return false;
     }
 
     std::list<char> futureBuffer;
@@ -112,12 +114,14 @@ class Lz77 {
                         patternString.append(",");
                         patternString = patternString + std::to_string(patternLength);
                         if(patternLength*2 >= patternString.length()){
+                            std::clog << patternString << std::endl;
                             this->outputFileStream << '<' << (this->historyBuffer.size()-i) << ',' << (patternLength);
                             patternFound = true;
                         }
                     }
 
-                    std::advance(historyBufferIterator, 1);
+                    // std::advance(futureBufferIterator, 1);
+                    // std::advance(historyBufferIterator, 1);
                 }
                 this->historyBufferMakeSpace();
                 if(!patternFound){
@@ -145,7 +149,7 @@ class Lz77 {
             this->historyBuffer.clear();
             this->futureBuffer.clear();
 
-            for(int i=0; i<this->futureBufferSize-1; i++){
+            for(int i=0; (i<this->futureBufferSize-1) && !this->inputFileStream.eof(); i++){
                 this->futureBuffer.push_back(this->inputFileStream.get());
             }
 
@@ -155,21 +159,66 @@ class Lz77 {
                 }
 
                 std::list<char>::iterator historyBufferIterator = this->historyBuffer.begin();
+                // std::clog << "*historyBufferIterator: " << *historyBufferIterator << " | ";
                 std::list<char>::iterator futureBufferIterator = this->futureBuffer.begin();
+                // std::clog << "*futureBufferIterator: " << *futureBufferIterator << std::endl;
 
-                if(*futureBufferIterator == '>'){
+                if(*futureBufferIterator == '>' && !this->futureBuffer.empty()){
+                    std::clog << "*futureBufferIterator: " << *futureBufferIterator << " | ";
                     std::advance(futureBufferIterator, 1);
+                    std::clog << "*futureBufferIterator: " << *futureBufferIterator << std::endl;
+                    this->outputFileStream << *futureBufferIterator;
                     this->historyBufferMakeSpace();
                     this->historyBuffer.push_back(*futureBufferIterator);
+                    this->futureBuffer.pop_front();
+                    this->futureBuffer.pop_front();
                 }
-                else if(*futureBufferIterator == '<'){
+                else if(*futureBufferIterator == '<' && !this->futureBuffer.empty()){
+                    std::string distanceString;
+                    long distance;
+                    do{
+                        std::advance(futureBufferIterator, 1);
+                        distanceString += *futureBufferIterator;
+                        std::clog << "distanceString: " << distanceString << " | ";
+                    }while(*futureBufferIterator != ',');
+                    distanceString = distanceString.substr(0, distanceString.length()-1);
+                    std::clog << "distanceString: " << distanceString << std::endl;
+                    distance = std::stol(distanceString);
 
+                    std::string lengthString;
+                    long length;
+                    do{
+                        std::advance(futureBufferIterator, 1);
+                        lengthString += *futureBufferIterator;
+                        std::clog << "lengthString: " << lengthString << " | ";
+                    }while((*futureBufferIterator != '>' && *futureBufferIterator != '<') && futureBufferIterator != this->futureBuffer.end());
+                    lengthString = lengthString.substr(0, lengthString.length()-1);
+                    std::clog << "lengthString: " << lengthString << std::endl;
+                    length = std::stol(lengthString);
+
+                    historyBufferIterator = this->historyBuffer.end();
+                    std::advance(historyBufferIterator, -(distance));
+                    for(int i=0; i<length; i++){
+                        this->outputFileStream << *historyBufferIterator;
+                        if(this->historyBufferMakeSpace()){
+                            historyBufferIterator--;
+                            std::clog << "historyBufferMakeSpace-- | *historyBufferIterator: " << *historyBufferIterator;
+                        }
+                        this->historyBuffer.push_back(*historyBufferIterator);
+                        std::clog << "*historyBufferIterator: " << *historyBufferIterator << " | ";
+                        historyBufferIterator++;
+                    }
+                    std::clog << std::endl;
+                    for(int i=0; i<(distanceString.length() + lengthString.length() + 2); i++){
+                        this->futureBuffer.pop_front();
+                    }
                 }
-
-                char currentCharacter;
-                currentCharacter = this->futureBuffer.front();
-
-
+                else{
+                    if(futureBufferIterator != this->futureBuffer.end()){
+                        std::advance(futureBufferIterator, 1);
+                    }
+                    this->futureBuffer.pop_front();
+                }
             }
 
             this->inputFileStream.close();
