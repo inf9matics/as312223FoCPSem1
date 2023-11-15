@@ -64,6 +64,10 @@ class Lz77 {
             this->log = true; //Temporary
         }
     }
+
+    std::string argument(std::string i){
+        return this->cliArguments->at(i);
+    }
     
     void compress(){
         if(this->cliArguments->isPrepared()){
@@ -98,7 +102,6 @@ class Lz77 {
                         patternString = patternString + std::to_string(this->historyBuffer.size()-i);
                         patternString.append(",");
                         patternString = patternString + std::to_string(patternLength);
-                        std::clog << patternString << std::endl;
                         if(patternLength*2 >= patternString.length()){
                             this->outputFileStream << '<' << (this->historyBuffer.size()-i) << ',' << (patternLength);
                             patternFound = true;
@@ -127,10 +130,66 @@ class Lz77 {
                     }
                 }
             }
+            this->inputFileStream.close();
+            this->outputFileStream.close();
         }
     }
 
     void decompress(){
-    
+        if(this->cliArguments->isPrepared()){
+            this->openInputFile();
+            this->openOutputFile();
+
+            while(!this->inputFileStream.eof()){
+                char currentCharacter;
+                this->inputFileStream.get(currentCharacter);
+                if(currentCharacter == '>'){
+                    this->inputFileStream.get(currentCharacter);
+                    std::clog << "I'm writing a raw byte: " << currentCharacter << std::endl;
+                    this->outputFileStream << currentCharacter;
+                }
+                else if(currentCharacter == '<'){
+                    std::string distanceString = "";
+                    long distance;
+                    std::string lengthString = "";
+                    long length;
+                    this->inputFileStream.get(currentCharacter);
+                    std::clog << "I'm doint something AA " << currentCharacter << std::endl;
+                    while(currentCharacter != ','){
+                        std::clog << "I'm doint something A " << currentCharacter << std::endl;
+                        distanceString += currentCharacter;
+                        this->inputFileStream.get(currentCharacter);
+                    }
+                    this->inputFileStream.get(currentCharacter);
+                    std::clog << "I'm doint something AB " << currentCharacter << std::endl;
+                    while(!(currentCharacter == '>' || currentCharacter == '<') && !this->inputFileStream.eof()){
+                        std::clog << "I'm doint something B " << currentCharacter << std::endl;
+                        lengthString += currentCharacter;
+                        this->inputFileStream.get(currentCharacter);
+                    }
+                    std::clog << distanceString << " " << lengthString << std::endl;
+                    distance = std::stol(distanceString);
+                    distance = distance * (-1);
+                    std::clog << distance << std::endl;
+                    length = std::stol(lengthString);
+                    std::ifstream outputFileStreamInput;
+                    this->outputFileStream.close();
+                    outputFileStreamInput.open(this->argument("-o"), std::ios::binary);
+                    outputFileStreamInput.seekg(distance, std::ios_base::end);this->outputFileStream.close();
+                    for(int i=0; i< length; i++){
+                        outputFileStreamInput.get(currentCharacter);
+                        outputFileStreamInput.close();
+                        this->openOutputFile();
+                        std::clog << "I'm doint something C: " << currentCharacter << " chuj" << std::endl;
+                        this->outputFileStream << currentCharacter;
+                        this->outputFileStream.close();
+                        outputFileStreamInput.open(this->argument("-o"), std::ios::binary);
+                    }
+                }
+            }
+
+            this->inputFileStream.close();
+            this->outputFileStream.close();
+        }
     }
 };
