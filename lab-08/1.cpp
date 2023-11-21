@@ -31,21 +31,22 @@ void wordsInFile(std::map<std::string, int> &map, std::ifstream &fileStream){
     }
 }
 
-void doubleWordsInFile(std::map<std::string, int> &map, std::ifstream &fileStream){
+void doubleWordsInFile(std::map<std::pair<std::string, std::string>, int> &map, std::ifstream &fileStream){
     while(!fileStream.eof()){
-        std::string word;
-        fileStream >> word;
-        word = trim(word);
+        std::string word1;
+        fileStream >> word1;
+        word1 = trim(word1);
         std::string word2;
         fileStream >> word2;
         word2 = trim(word2);
-        word.append(" ");
-        word.append(word2);
-        if(map.count(word) == 0){
-            map.insert_or_assign(word, 1);
+        std::pair<std::string, std::string> wordPair;
+        wordPair.first = word1;
+        wordPair.second = word2;
+        if(map.count(wordPair) == 0){
+            map.insert_or_assign(wordPair, 1);
         }
         else{
-            map.insert_or_assign(word, (map.at(word)+1));
+            map.insert_or_assign(wordPair, (map.at(wordPair)+1));
         }
     }
 }
@@ -129,12 +130,12 @@ int main(){
     std::cout << std::endl;
 
     inputFileStream.open("currentBook");
-    std::map<std::string, int> doubleWordsOccurences;
+    std::map<std::pair<std::string, std::string>, int> doubleWordsOccurences;
     doubleWordsInFile(doubleWordsOccurences, inputFileStream);
     inputFileStream.close();
     std::cout << "| ";
     for(auto &element : doubleWordsOccurences){
-        std::cout << element.first << " : " << element.second << " | ";
+        std::cout << element.first.first << " " << element.first.second << " : " << element.second << " | ";
     }
     std::cout << std::endl;
 }
