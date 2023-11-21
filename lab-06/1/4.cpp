@@ -33,6 +33,4 @@ int main(int argc, char **argv){
     if(!correctParameters){
         return 0;
     }
-
-    
 }
