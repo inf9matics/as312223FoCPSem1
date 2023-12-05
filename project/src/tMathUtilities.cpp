@@ -1,20 +1,22 @@
+#include "tMathUtilities.h"
+
 #include <cmath>
 
-int minOrHigher(int n, int min){
+int TMathUtilities::minOrHigher(int n, int min){
     if(n < min){
         return min;
     }
     return n;
 }
 
-int maxOrLower(int n, int max){
+int TMathUtilities::maxOrLower(int n, int max){
     if(n > max){
         return max;
     }
     return n;
 }
 
-int containInRange(int x, int min, int max){
+int TMathUtilities::containInRange(int x, int min, int max){
     if(x < min){
         return min;
     }
