@@ -41,9 +41,9 @@ int main(int argc, const char ** argv) {
     
     double a = 0;
     double b = 10;
-    double res1 = integral(a, b, f_x, 0.00001);
-    double res2 = integral(a, b, f_x2, 0.00001);
+    double res1 = integral(a, b, f_x, 0.000001);
+    double res2 = integral(a, b, f_x2, 0.000001);
     
-    std::cout << res1 << " " << res2 << " " << integral(a, b, f_10, 0.00001) << std::endl;
+    std::cout << res1 << " " << res2 << " " << integral(a, b, f_10, 0.000001) << std::endl;
     return 0;
 }

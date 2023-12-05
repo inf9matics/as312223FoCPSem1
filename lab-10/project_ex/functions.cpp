@@ -38,13 +38,17 @@ double integral(double a, double b, double (*fun)(double), double step)
         step = b;
     }
 
-    double currentPos = a;
-
-    do{
-        area += step * fun((currentPos+step+currentPos)/2);
-        currentPos += step;
+    a += step;
+    if(a > b){
+        a = b-step;
     }
-    while(currentPos <= b);
+
+    bool wentOver = false;
+    do{
+        area += step * fun(((2*a)-step)/2);
+        a += step;
+    }
+    while(a <= b);
 
     return area;
 }
