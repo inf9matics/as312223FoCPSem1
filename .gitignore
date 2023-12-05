@@ -6,7 +6,6 @@
 .vscode/
 code.code-workspace
 build/
-.github/
 !CMakeLists.txt
 
 ## Ignore Visual Studio temporary files, build results, and
