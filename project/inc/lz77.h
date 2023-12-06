@@ -65,11 +65,12 @@ class Lz77 {
      */
     std::list<char> historyBuffer;
 
-    /*!
-        @brief Function to manage memory usage of historyBuffer.
-        @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
-        @return bool: Whether an element was removed from historyBuffer.
-    */
+    /**
+     * @brief Function to manage memory usage of historyBuffer.
+     * @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
+     * @return true First element was removed from #historyBuffer.
+     * @return false Nothing was removed.
+     */
     bool historyBufferMakeSpace();
 
     /**

@@ -8,6 +8,9 @@
 #include <vector>
 #include <list>
 
+/**
+ * @copydoc Lz77::historyBufferMakeSpace()
+ */
 bool Lz77::historyBufferMakeSpace()
 {
     if (this->historyBuffer.size() >= this->historyBufferSize)
