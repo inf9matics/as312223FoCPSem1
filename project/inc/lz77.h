@@ -1,12 +1,5 @@
 /** @file */
 
-//
-// lz77.h
-// lz77
-//
-// Created by Adam Strączek
-//
-
 #include "cli.h"
 
 #include <string>
@@ -72,11 +65,12 @@ class Lz77 {
      */
     std::list<char> historyBuffer;
 
-    /*!
-        @brief Function to manage memory usage of historyBuffer.
-        @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
-        @return bool: Whether an element was removed from historyBuffer.
-    */
+    /**
+     * @brief Function to manage memory usage of historyBuffer.
+     * @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
+     * @return true First element was removed from #historyBuffer.
+     * @return false Nothing was removed.
+     */
     bool historyBufferMakeSpace();
 
     /**
@@ -146,12 +140,20 @@ class Lz77 {
     /**
      * @brief Function returning value of argument from cli.
      * @details argument() returns the corresponding element from the internal map of #cliArguments.
-     * @param i (std::string)
-     * @return Value of #cliArguments map at key i (std::string)
+     * @param i the key for internal #cliArguments map
+     * @return std::string value at key @p i
      */
     std::string argument(std::string i);
     
+    /**
+     * @brief Function responsible for file compression.
+     * @details The source code resides in lz77.cpp.
+     */
     void compress();
 
+    /**
+     * @brief Function responsible for file decompression.
+     * @details The source code resides in lz77.cpp.
+     */
     void decompress();
 };
