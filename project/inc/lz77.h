@@ -1,12 +1,5 @@
 /** @file */
 
-//
-// lz77.h
-// lz77
-//
-// Created by Adam Strączek
-//
-
 #include "cli.h"
 
 #include <string>
@@ -146,8 +139,8 @@ class Lz77 {
     /**
      * @brief Function returning value of argument from cli.
      * @details argument() returns the corresponding element from the internal map of #cliArguments.
-     * @param i (std::string)
-     * @return Value of #cliArguments map at key i (std::string)
+     * @param i the key for internal #cliArguments map
+     * @return std::string value at key @param i
      */
     std::string argument(std::string i);
     
