@@ -9,3 +9,5 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
 add_subdirectory(project)
+
+add_subdirectory(lab-10)
