@@ -38,6 +38,7 @@ double integral(double a, double b, double (*fun)(double), double step)
         step = b;
     }
 
+<<<<<<< HEAD
     double currentPos = a;
 
     do{
@@ -45,6 +46,19 @@ double integral(double a, double b, double (*fun)(double), double step)
         currentPos += step;
     }
     while(currentPos <= b);
+=======
+    a += step;
+    if(a > b){
+        a = b-step;
+    }
+
+    bool wentOver = false;
+    do{
+        area += step * fun(((2*a)-step)/2);
+        a += step;
+    }
+    while(a <= b);
+>>>>>>> 66cd378c5224ddf3cd2e5ad41df9536bab2313ce
 
     return area;
 }

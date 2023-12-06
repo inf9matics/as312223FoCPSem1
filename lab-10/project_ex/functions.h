@@ -27,9 +27,15 @@ double f_x2(double x); //declaration of function f_x2 that takes a double and re
 
 
 /**
+<<<<<<< HEAD
  * @brief Function returning 10
  * 
  * @param x 
+=======
+ * @brief Function returning 10.
+ * 
+ * @param x function argument
+>>>>>>> 66cd378c5224ddf3cd2e5ad41df9536bab2313ce
  * @return double 
  */
 double f_10(double x);
