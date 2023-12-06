@@ -140,7 +140,7 @@ class Lz77 {
      * @brief Function returning value of argument from cli.
      * @details argument() returns the corresponding element from the internal map of #cliArguments.
      * @param i the key for internal #cliArguments map
-     * @return std::string value at key @param i
+     * @return std::string value at key @p i
      */
     std::string argument(std::string i);
     
