@@ -1,3 +1,5 @@
+/** @file  */
+
 #include "lz77.h"
 #include "cli.h"
 #include "tMathUtilities.h"
