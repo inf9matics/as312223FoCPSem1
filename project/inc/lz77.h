@@ -144,7 +144,15 @@ class Lz77 {
      */
     std::string argument(std::string i);
     
+    /**
+     * @brief Function responsible for file compression.
+     * @details The source code resides in lz77.cpp.
+     */
     void compress();
 
+    /**
+     * @brief Function responsible for file decompression.
+     * @details The source code resides in lz77.cpp.
+     */
     void decompress();
 };
