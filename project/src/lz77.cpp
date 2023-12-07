@@ -8,6 +8,8 @@
 #include <vector>
 #include <list>
 
+#include <filesystem>
+
 bool Lz77::historyBufferMakeSpace()
 {
     if (this->historyBuffer.size() >= this->historyBufferSize)
@@ -20,11 +22,12 @@ bool Lz77::historyBufferMakeSpace()
 
 void Lz77::openInputFile()
 {
+    this->inputFileStream.exceptions(std::ifstream::failbit);
     try
     {
         this->inputFileStream.open(this->cliArguments->at("-i"), std::ios::binary);
     }
-    catch (const std::ifstream::failure &e)
+    catch (std::ifstream::failure e)
     {
         std::cerr << e.what();
     }
@@ -32,11 +35,12 @@ void Lz77::openInputFile()
 
 void Lz77::openOutputFile()
 {
+    this->outputFileStream.exceptions(std::ofstream::failbit);
     try
     {
         this->outputFileStream.open(this->cliArguments->at("-o"), std::ios::binary);
     }
-    catch (const std::ifstream::failure &e)
+    catch (std::ifstream::failure e)
     {
         std::cerr << e.what();
     }
