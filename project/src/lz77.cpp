@@ -22,27 +22,17 @@ bool Lz77::historyBufferMakeSpace()
 
 void Lz77::openInputFile()
 {
-    this->inputFileStream.exceptions(std::ifstream::failbit);
-    try
-    {
-        this->inputFileStream.open(this->cliArguments->at("-i"), std::ios::binary);
-    }
-    catch (std::ifstream::failure e)
-    {
-        std::cerr << e.what();
+    this->inputFileStream.open(this->cliArguments->at("-i"), std::ios::binary);
+    if(this->inputFileStream.fail()){
+        throw "e";
     }
 }
 
 void Lz77::openOutputFile()
 {
-    this->outputFileStream.exceptions(std::ofstream::failbit);
-    try
-    {
-        this->outputFileStream.open(this->cliArguments->at("-o"), std::ios::binary);
-    }
-    catch (std::ifstream::failure e)
-    {
-        std::cerr << e.what();
+    this->outputFileStream.open(this->cliArguments->at("-o"), std::ios::binary);
+    if(this->outputFileStream.fail()){
+        throw "e";
     }
 }
 
