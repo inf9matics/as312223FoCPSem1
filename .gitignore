@@ -9,14 +9,8 @@ code.code-workspace
 
 !Doxyfile
 !doxygen.md
-html/
-latex/
 
-!build/
-build/*
-!build/testingAssets/
 !*.raw
-!build/README.md
 
 
 ## Ignore Visual Studio temporary files, build results, and
