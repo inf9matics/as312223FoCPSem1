@@ -56,6 +56,12 @@ class CliArguments{
     std::vector<std::string> requiredParameters;
 
     /**
+     * @brief Map containing default parameters to populate #cliArguments.
+     * @details This std::map is set when calling CliArguments() by an implementation.
+     */
+    std::map<std::string, std::string> defaultParemeters;
+
+    /**
      * @brief Function to govern #prepared.
      * @details This function is based on #requiredParameters and #cliArguments; when a value from #requiredParameters is missing in key form in #cliArguments, it returns false.
      * @return true All parameters are present in #cliArguments.
@@ -67,7 +73,7 @@ class CliArguments{
     /**
      * @brief Construct a new Cli Arguments object
      * @details This constructor internally prepares the object and sets #prepared at the end.
-     * @param argc The length of @param argv.
+     * @param argc The length of argv.
      * @param argv Basic array of C-strings.
      * @param upstreamParameters A std::vector that sets #requiredParameters.
      */
@@ -92,7 +98,7 @@ class CliArguments{
      * @brief Returns #cliArguments.at(@param n).
      * @details This functions exists to expose #cliArguments to the implementation.
      * @param n Key at #cliArguments.
-     * @return std::string Value of #cliArguments at @param n.
+     * @return std::string Value of #cliArguments at n.
      */
     std::string at(std::string n);
 };
