@@ -59,28 +59,6 @@ class Lz77 {
     int futureBufferSize;
 
     /**
-     * @brief Historical buffer for sliding window.
-     * @details #historyBuffer holds bytes that've been analyzed and should be considered for pattern searching.\n
-     * It's constantly shifting and taking variables from #futureBuffer.
-     */
-    std::list<char> historyBuffer;
-
-    /**
-     * @brief Function to manage memory usage of historyBuffer.
-     * @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
-     * @return true First element was removed from #historyBuffer.
-     * @return false Nothing was removed.
-     */
-    bool historyBufferMakeSpace();
-
-    /**
-     * @brief Future buffer for sliding window.
-     * @details #futureBuffer holds bytes that are after the byte that's being analyzed as the start of the pattern.\n
-     * It's constantly shifting, giving variables to #historyBuffer and taking bytes from #inputFileStream.
-     */
-    std::list<char> futureBuffer;
-
-    /**
      * @brief Dev variable for logging.
      * @details #log exists for outputting logs in certain scenarios in the development process.\n
      * It's not called from outside and is currently set via the constructor Lz77().
