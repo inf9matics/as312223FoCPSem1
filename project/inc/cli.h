@@ -95,7 +95,7 @@ class CliArguments{
     std::string getHelpDialog();
 
     /**
-     * @brief Returns #cliArguments.at(@param n).
+     * @brief Returns #cliArguments.at n.
      * @details This functions exists to expose #cliArguments to the implementation.
      * @param n Key at #cliArguments.
      * @return std::string Value of #cliArguments at n.
