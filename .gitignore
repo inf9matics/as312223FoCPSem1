@@ -11,7 +11,7 @@ code.code-workspace
 !doxygen.md
 
 build/
-!*.txt
+!*.txt*
 
 html/
 latex/
