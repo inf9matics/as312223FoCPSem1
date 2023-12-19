@@ -1,3 +1,6 @@
+enable_testing()
+include(CTest)
+
 add_test(NAME project_test1_c COMMAND $<TARGET_FILE:project> -i ${PROJECT_SOURCE_DIR}/test/res/project_test1.raw -o ${PROJECT_SOURCE_DIR}/test/res/project_test1.compressed -t c -n 4096000 -k 4096000)
 set_tests_properties(project_test1_c PROPERTIES LABELS "project")
 
