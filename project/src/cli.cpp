@@ -8,7 +8,7 @@ void CliArguments::prepareStringMap()
 {
     for (int i = 1; i < this->cliArgumentsCount - 1; i += 2)
     {
-        this->cliArguments.insert_or_assign(TStringUtilities::basicStringToString(this->cliArgumentsPointers[i]), TStringUtilities::basicStringToString(this->cliArgumentsPointers[i + 1]));
+        this->cliArguments[TStringUtilities::basicStringToString(this->cliArgumentsPointers[i])] = TStringUtilities::basicStringToString(this->cliArgumentsPointers[i + 1]);
     }
 }
 

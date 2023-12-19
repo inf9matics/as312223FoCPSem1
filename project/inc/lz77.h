@@ -1,5 +1,12 @@
 /** @file */
 
+//
+// lz77.h
+// lz77
+//
+// Created by Adam Strączek
+//
+
 #include "cli.h"
 
 #include <string>
@@ -57,6 +64,27 @@ class Lz77 {
      * @details #futureBufferSize is calculated from #inputBufferSize and #historyBufferSize.
      */
     int futureBufferSize;
+
+    /**
+     * @brief Historical buffer for sliding window.
+     * @details #historyBuffer holds bytes that've been analyzed and should be considered for pattern searching.\n
+     * It's constantly shifting and taking variables from #futureBuffer.
+     */
+    std::list<char> historyBuffer;
+
+    /*!
+        @brief Function to manage memory usage of historyBuffer.
+        @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
+        @return bool: Whether an element was removed from historyBuffer.
+    */
+    bool historyBufferMakeSpace();
+
+    /**
+     * @brief Future buffer for sliding window.
+     * @details #futureBuffer holds bytes that are after the byte that's being analyzed as the start of the pattern.\n
+     * It's constantly shifting, giving variables to #historyBuffer and taking bytes from #inputFileStream.
+     */
+    std::list<char> futureBuffer;
 
     /**
      * @brief Dev variable for logging.
@@ -118,20 +146,12 @@ class Lz77 {
     /**
      * @brief Function returning value of argument from cli.
      * @details argument() returns the corresponding element from the internal map of #cliArguments.
-     * @param i the key for internal #cliArguments map
-     * @return std::string value at key @p i
+     * @param i (std::string)
+     * @return Value of #cliArguments map at key i (std::string)
      */
     std::string argument(std::string i);
     
-    /**
-     * @brief Function responsible for file compression.
-     * @details The source code resides in lz77.cpp.
-     */
     void compress();
 
-    /**
-     * @brief Function responsible for file decompression.
-     * @details The source code resides in lz77.cpp.
-     */
     void decompress();
 };

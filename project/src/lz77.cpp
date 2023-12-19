@@ -8,8 +8,6 @@
 #include <vector>
 #include <list>
 
-#include <filesystem>
-
 bool Lz77::historyBufferMakeSpace()
 {
     if (this->historyBuffer.size() >= this->historyBufferSize)
@@ -22,17 +20,25 @@ bool Lz77::historyBufferMakeSpace()
 
 void Lz77::openInputFile()
 {
-    this->inputFileStream.open(this->cliArguments->at("-i"), std::ios::binary);
-    if(this->inputFileStream.fail()){
-        throw "e";
+    try
+    {
+        this->inputFileStream.open(this->cliArguments->at("-i"), std::ios::binary);
+    }
+    catch (const std::ifstream::failure &e)
+    {
+        std::cerr << e.what();
     }
 }
 
 void Lz77::openOutputFile()
 {
-    this->outputFileStream.open(this->cliArguments->at("-o"), std::ios::binary);
-    if(this->outputFileStream.fail()){
-        throw "e";
+    try
+    {
+        this->outputFileStream.open(this->cliArguments->at("-o"), std::ios::binary);
+    }
+    catch (const std::ifstream::failure &e)
+    {
+        std::cerr << e.what();
     }
 }
 
@@ -78,14 +84,14 @@ void Lz77::compress()
         this->historyBuffer.clear();
         this->futureBuffer.clear();
 
-        for (int i = 0; i < this->inputBufferSize - 1 && !this->inputFileStream.eof(); i++)
+        for (int i = 0; i < this->inputBufferSize - 1 && (this->inputFileStream.peek() != EOF); i++)
         {
             this->futureBuffer.push_back(this->inputFileStream.get());
         }
 
         while (!this->futureBuffer.empty())
         {
-            if (!this->inputFileStream.eof())
+            if (this->inputFileStream.peek() != EOF)
             {
                 this->futureBuffer.push_back(this->inputFileStream.get());
             }
