@@ -84,14 +84,14 @@ void Lz77::compress()
         this->historyBuffer.clear();
         this->futureBuffer.clear();
 
-        for (int i = 0; i < this->inputBufferSize - 1 && !this->inputFileStream.eof(); i++)
+        for (int i = 0; i < this->inputBufferSize - 1 && (this->inputFileStream.peek() != EOF); i++)
         {
             this->futureBuffer.push_back(this->inputFileStream.get());
         }
 
         while (!this->futureBuffer.empty())
         {
-            if (!this->inputFileStream.eof())
+            if (this->inputFileStream.peek() != EOF)
             {
                 this->futureBuffer.push_back(this->inputFileStream.get());
             }
