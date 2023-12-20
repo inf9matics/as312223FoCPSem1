@@ -41,17 +41,17 @@ set_tests_properties(project_test2_cp_decompressed PROPERTIES LABELS "project")
 
 
 
-#add_test(NAME project_test3_prepare COMMAND curl "${assets_trabus322_eu}/1.raw.png" --output 1.raw.png)
-#set_tests_properties(project_test3_prepare PROPERTIES LABELS "project")
+add_test(NAME project_test3_prepare COMMAND curl "${assets_trabus322_eu}/1.raw.png" --output 1.raw.png)
+set_tests_properties(project_test3_prepare PROPERTIES LABELS "project")
 
-#add_test(NAME project_test3_c COMMAND $<TARGET_FILE:project_exec> -i 1.raw.png -o 1.png.compressed -t c -n 4096000 -k 4096000)
-#set_tests_properties(project_test3_c PROPERTIES LABELS "project")
-#set_tests_properties(project_test3_c PROPERTIES DEPENDS project_test3_prepare)
+add_test(NAME project_test3_c COMMAND $<TARGET_FILE:project_exec> -i 1.raw.png -o 1.png.compressed -t c -n 4096000 -k 4096000)
+set_tests_properties(project_test3_c PROPERTIES LABELS "project")
+set_tests_properties(project_test3_c PROPERTIES DEPENDS project_test3_prepare)
 
-#add_test(NAME project_test3_d COMMAND $<TARGET_FILE:project_exec> -i 1.png.compressed -o 1.uncompressed.png -t d -n 4096000 -k 4096000)
-#set_tests_properties(project_test3_d PROPERTIES LABELS "project")
-#set_tests_properties(project_test3_d PROPERTIES DEPENDS project_test3_c)
+add_test(NAME project_test3_d COMMAND $<TARGET_FILE:project_exec> -i 1.png.compressed -o 1.uncompressed.png -t d -n 4096000 -k 4096000)
+set_tests_properties(project_test3_d PROPERTIES LABELS "project")
+set_tests_properties(project_test3_d PROPERTIES DEPENDS project_test3_c)
 
-#add_test(NAME project_test3_d_check COMMAND cmp 1.raw.png 1.uncompressed.png)
-#set_tests_properties(project_test3_d_check PROPERTIES LABELS "project")
-#set_tests_properties(project_test3_d_check PROPERTIES DEPENDS project_test3_d)
+add_test(NAME project_test3_d_check COMMAND cmp 1.raw.png 1.uncompressed.png)
+set_tests_properties(project_test3_d_check PROPERTIES LABELS "project")
+set_tests_properties(project_test3_d_check PROPERTIES DEPENDS project_test3_d)
