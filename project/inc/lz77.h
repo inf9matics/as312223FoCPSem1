@@ -20,8 +20,30 @@
  * @brief Class Lz77 responsible for lz77 compression.
  * @details The class in itself assumes it's going to be run from cli along with parameters, therefore it has a member of class CliArguments.
  */
+
+class Lz77Prepend {
+private:
+    std::vector<char> bytesVector;
+    std::vector<std::vector<char>> bitsVectorSeparated;
+    std::vector<std::vector<char>> bitsVectorSeparatedPatternLength;
+    bool foundPattern;
+    char startingByte;
+    char ongoingByte;
+    char ongoingStartingByte;
+
+    void createPrepend(long& numberToConvert, long& patternLength);
+    void prepareBitsVectorSepareted(std::vector<char>& bitsVector);
+    void prepareBitsVectorSeparetedPatternLength(std::vector<char>& bitsVector);
+
+public:
+    Lz77Prepend(long numberToConvert, long patternLength);
+    char at(int n);
+    char next();
+    int size();
+    };
+
 class Lz77 {
-    private:
+private:
     /**
      * @brief Historical buffer for sliding window size.
      * @details #historyBufferSize is inherited from the "-n" cli parameter from #requiredParameters.\n
@@ -60,33 +82,6 @@ class Lz77 {
     int bufferSize;
 
     /**
-     * @brief Sliding window buffer size.
-     * @details #futureBufferSize is calculated from #inputBufferSize and #historyBufferSize.
-     */
-    int futureBufferSize;
-
-    /**
-     * @brief Historical buffer for sliding window.
-     * @details #historyBuffer holds bytes that've been analyzed and should be considered for pattern searching.\n
-     * It's constantly shifting and taking variables from #futureBuffer.
-     */
-    std::list<char> historyBuffer;
-
-    /*!
-        @brief Function to manage memory usage of historyBuffer.
-        @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
-        @return bool: Whether an element was removed from historyBuffer.
-    */
-    bool historyBufferMakeSpace();
-
-    /**
-     * @brief Future buffer for sliding window.
-     * @details #futureBuffer holds bytes that are after the byte that's being analyzed as the start of the pattern.\n
-     * It's constantly shifting, giving variables to #historyBuffer and taking bytes from #inputFileStream.
-     */
-    std::list<char> futureBuffer;
-
-    /**
      * @brief Dev variable for logging.
      * @details #log exists for outputting logs in certain scenarios in the development process.\n
      * It's not called from outside and is currently set via the constructor Lz77().
@@ -119,8 +114,8 @@ class Lz77 {
      * @details #cliArguments is an object of class CliArguments.
      * Values for it are set in the Lz77() constructor.
      */
-    CliArguments *cliArguments;
-    
+    CliArguments* cliArguments;
+
     /*!
         @brief Function handling input file opening.
         @details This function will throw an exception if the #inputFileStream couldn't open a file.
@@ -133,7 +128,7 @@ class Lz77 {
     */
     void openOutputFile();
 
-    public:
+public:
     /*!
         @brief Constructor for the Lz77 class.
         @details This constructor prepares the object via cli handling.\n
@@ -141,7 +136,7 @@ class Lz77 {
         @param argc the number of arguments passed down from cli
         @param argv the array containing cli arguments
     */
-    Lz77(int argc, char **argv);
+    Lz77(int argc, char** argv);
 
     /**
      * @brief Function returning value of argument from cli.
@@ -150,8 +145,8 @@ class Lz77 {
      * @return Value of #cliArguments map at key i (std::string)
      */
     std::string argument(std::string i);
-    
+
     void compress();
 
     void decompress();
-};
+    };
