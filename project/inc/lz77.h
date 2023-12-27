@@ -21,8 +21,8 @@
  * @details The class in itself assumes it's going to be run from cli along with parameters, therefore it has a member of class CliArguments.
  */
 
-class Lz77Prepend{
-    private:
+class Lz77Prepend {
+private:
     std::vector<char> bytesVector;
     std::vector<std::vector<char>> bitsVectorSeparated;
     bool foundPattern;
@@ -30,19 +30,19 @@ class Lz77Prepend{
     char ongoingByte;
     char ongoingStartingByte;
 
-    char createPrependByte(std::vector<char> &numberBitVector, int from);
-    void createPrepend(long &numberToConvert, long &patternLength);
-    void prepareBitsVectorSepareted(std::vector<char> &bitsVector);
+    char createPrependByte(std::vector<char>& numberBitVector, int from);
+    void createPrepend(long& numberToConvert, long& patternLength);
+    void prepareBitsVectorSepareted(std::vector<char>& bitsVector);
 
-    public:
+public:
     Lz77Prepend(long numberToConvert, long patternLength);
     char at(int n);
     char next();
     int size();
-};
+    };
 
 class Lz77 {
-    private:
+private:
     /**
      * @brief Historical buffer for sliding window size.
      * @details #historyBufferSize is inherited from the "-n" cli parameter from #requiredParameters.\n
@@ -113,8 +113,8 @@ class Lz77 {
      * @details #cliArguments is an object of class CliArguments.
      * Values for it are set in the Lz77() constructor.
      */
-    CliArguments *cliArguments;
-    
+    CliArguments* cliArguments;
+
     /*!
         @brief Function handling input file opening.
         @details This function will throw an exception if the #inputFileStream couldn't open a file.
@@ -127,7 +127,7 @@ class Lz77 {
     */
     void openOutputFile();
 
-    public:
+public:
     /*!
         @brief Constructor for the Lz77 class.
         @details This constructor prepares the object via cli handling.\n
@@ -135,7 +135,7 @@ class Lz77 {
         @param argc the number of arguments passed down from cli
         @param argv the array containing cli arguments
     */
-    Lz77(int argc, char **argv);
+    Lz77(int argc, char** argv);
 
     /**
      * @brief Function returning value of argument from cli.
@@ -144,8 +144,8 @@ class Lz77 {
      * @return Value of #cliArguments map at key i (std::string)
      */
     std::string argument(std::string i);
-    
+
     void compress();
 
     void decompress();
-};
+    };
