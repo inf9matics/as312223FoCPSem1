@@ -20,6 +20,27 @@
  * @brief Class Lz77 responsible for lz77 compression.
  * @details The class in itself assumes it's going to be run from cli along with parameters, therefore it has a member of class CliArguments.
  */
+
+class Lz77Prepend{
+    private:
+    std::vector<char> bytesVector;
+    std::vector<std::vector<char>> bitsVectorSeparated;
+    bool foundPattern;
+    char startingByte;
+    char ongoingByte;
+    char ongoingStartingByte;
+
+    char createPrependByte(std::vector<char> &numberBitVector, int from);
+    void createPrepend(long &numberToConvert, long &patternLength);
+    void prepareBitsVectorSepareted(std::vector<char> &bitsVector);
+
+    public:
+    Lz77Prepend(long numberToConvert, long patternLength);
+    char at(int n);
+    char next();
+    int size();
+};
+
 class Lz77 {
     private:
     /**
@@ -58,33 +79,6 @@ class Lz77 {
      * It's calculated from #futureBufferSize.
      */
     int bufferSize;
-
-    /**
-     * @brief Sliding window buffer size.
-     * @details #futureBufferSize is calculated from #inputBufferSize and #historyBufferSize.
-     */
-    int futureBufferSize;
-
-    /**
-     * @brief Historical buffer for sliding window.
-     * @details #historyBuffer holds bytes that've been analyzed and should be considered for pattern searching.\n
-     * It's constantly shifting and taking variables from #futureBuffer.
-     */
-    std::list<char> historyBuffer;
-
-    /*!
-        @brief Function to manage memory usage of historyBuffer.
-        @details This function makes space via removing the first element of #historyBuffer if it's close to exceeding #historyBufferSize.
-        @return bool: Whether an element was removed from historyBuffer.
-    */
-    bool historyBufferMakeSpace();
-
-    /**
-     * @brief Future buffer for sliding window.
-     * @details #futureBuffer holds bytes that are after the byte that's being analyzed as the start of the pattern.\n
-     * It's constantly shifting, giving variables to #historyBuffer and taking bytes from #inputFileStream.
-     */
-    std::list<char> futureBuffer;
 
     /**
      * @brief Dev variable for logging.

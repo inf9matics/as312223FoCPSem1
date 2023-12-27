@@ -8,14 +8,80 @@
 #include <vector>
 #include <list>
 
-bool Lz77::historyBufferMakeSpace()
-{
-    if (this->historyBuffer.size() >= this->historyBufferSize)
-    {
-        this->historyBuffer.pop_front();
-        return true;
+Lz77Prepend::Lz77Prepend(long numberToConvert, long patternLength = 0){
+    if(patternLength != 0){
+        this->foundPattern = true;
+        startingByte = 1 << 7;
     }
-    return false;
+    else{
+        startingByte = 0;
+    }
+    this->ongoingByte = 1 << 7;
+    this->ongoingStartingByte = 1 << 6;
+
+    this->createPrepend(numberToConvert, patternLength);
+}
+
+void Lz77Prepend::prepareBitsVectorSepareted(std::vector<char> &bitsVector){
+    std::vector<char>::iterator it = bitsVector.begin();
+    std::vector<char> tempVector;
+    for(int i=0; i<6 && it!=bitsVector.end(); i++){
+        tempVector.push_back(*it);
+        std::advance(it, 1);
+    }
+    this->bitsVectorSeparated.push_back(tempVector);
+    tempVector.clear();
+    while(it!=bitsVector.end()){
+        for(int i=0; i<7 && it!=bitsVector.end(); i++){
+            tempVector.push_back(*it);
+            std::advance(it, 1);
+        }
+        this->bitsVectorSeparated.push_back(tempVector);
+        tempVector.clear();
+    }
+}
+
+void Lz77Prepend::createPrepend(long &numberToConvert, long &patternLength){
+    std::vector<char> numberBitVector = TMathUtilities::bitVectorFromNumber(numberToConvert);
+    this->prepareBitsVectorSepareted(numberBitVector);
+    numberBitVector.clear();
+    char currentByte = this->startingByte;
+    for(int i=0; i<this->bitsVectorSeparated.at(0).size(); i++){
+        currentByte += bitsVectorSeparated.at(0).at(i) << i;
+    }
+    if(this->bitsVectorSeparated.size() > 1){
+        currentByte += this->ongoingStartingByte;
+    }
+    this->bytesVector.push_back(currentByte);
+    for(int i=1; i<this->bitsVectorSeparated.size()-1; i++){
+        currentByte = this->ongoingByte;
+        for(int j=0; j<this->bitsVectorSeparated.at(i).size(); j++){
+            currentByte += this->bitsVectorSeparated.at(i).at(j) << j;
+        }
+        this->bytesVector.push_back(currentByte);
+    }
+    currentByte = 0;
+    for(int i=0; i<this->bitsVectorSeparated.at(this->bitsVectorSeparated.size()-1).size(); i++){
+        currentByte += this->bitsVectorSeparated.at(this->bitsVectorSeparated.size()-1).at(i) << i;
+    }
+    this->bytesVector.push_back(currentByte);
+}
+
+char Lz77Prepend::createPrependByte(std::vector<char> &numberBitVector, int from){
+    char currentByte = 0;
+    for(int i=0; i<7 && (i+from)<numberBitVector.size(); i++){
+        int iCorrected = i+from;
+        currentByte += numberBitVector.at(iCorrected) << (i);
+    }
+    return currentByte;
+}
+
+char Lz77Prepend::at(int n){
+    return this->bytesVector.at(n);
+}
+
+int Lz77Prepend::size(){
+    return this->bytesVector.size();
 }
 
 void Lz77::openInputFile()
@@ -58,9 +124,7 @@ Lz77::Lz77(int argc, char **argv)
     {
         this->inputBufferSize = std::stoi(this->cliArguments->at("-k"));
         this->historyBufferSize = std::stoi(this->cliArguments->at("-n"));
-        this->futureBufferSize = this->inputBufferSize + this->historyBufferSize + 1;
-
-        this->bufferSize = this->futureBufferSize * 4;
+        this->bufferSize = (this->inputBufferSize + this->historyBufferSize + 1)*4;
 
         this->log = true; // Temporary
     }
@@ -77,176 +141,10 @@ std::string Lz77::argument(std::string i)
 
 void Lz77::compress()
 {
-    if (this->cliArguments->isPrepared())
-    {
-        this->openInputFile();
-        this->openOutputFile();
-        this->historyBuffer.clear();
-        this->futureBuffer.clear();
 
-        for (int i = 0; i < this->inputBufferSize - 1 && !this->inputFileStream.eof(); i++)
-        {
-            this->futureBuffer.push_back(this->inputFileStream.get());
-        }
-
-        while (!this->futureBuffer.empty())
-        {
-            if (!this->inputFileStream.eof())
-            {
-                this->futureBuffer.push_back(this->inputFileStream.get());
-            }
-            bool patternFound = false;
-            int patternLength;
-            std::list<char>::iterator historyBufferIterator = this->historyBuffer.begin();
-            std::list<char>::iterator futureBufferIterator = this->futureBuffer.begin();
-            for (int i = 0; i < this->historyBuffer.size() && !patternFound; i++)
-            {
-                if (*futureBufferIterator == *historyBufferIterator)
-                {
-                    bool patternDone = false;
-                    for (int j = 1; (j < this->inputBufferSize) && !patternDone; j++)
-                    {
-                        std::advance(futureBufferIterator, 1);
-                        std::advance(historyBufferIterator, 1);
-                        if (*futureBufferIterator != *historyBufferIterator)
-                        {
-                            patternDone = true;
-                            patternLength = j;
-                        }
-                    }
-                    std::string patternString;
-                    patternString.append("<");
-                    patternString = patternString + std::to_string(this->historyBuffer.size() - i);
-                    patternString.append(",");
-                    patternString = patternString + std::to_string(patternLength);
-                    if (patternLength * 2 >= patternString.length())
-                    {
-                        std::clog << patternString << std::endl;
-                        this->outputFileStream << '<' << (this->historyBuffer.size() - i) << ',' << (patternLength);
-                        patternFound = true;
-                    }
-                }
-
-                // std::advance(futureBufferIterator, 1);
-                // std::advance(historyBufferIterator, 1);
-            }
-            this->historyBufferMakeSpace();
-            if (!patternFound)
-            {
-                this->outputFileStream << '>' << this->futureBuffer.front();
-                this->historyBufferMakeSpace();
-                this->historyBuffer.push_back(this->futureBuffer.front());
-                this->futureBuffer.pop_front();
-            }
-            else
-            {
-                for (int i = 0; i < patternLength; i++)
-                {
-                    this->historyBufferMakeSpace();
-                    this->historyBuffer.push_back(this->futureBuffer.front());
-                    this->futureBuffer.pop_front();
-                }
-            }
-        }
-        this->inputFileStream.close();
-        this->outputFileStream.close();
-    }
 }
 
 void Lz77::decompress()
 {
-    if (this->cliArguments->isPrepared())
-    {
-        this->openInputFile();
-        this->openOutputFile();
-        this->historyBuffer.clear();
-        this->futureBuffer.clear();
 
-        for (int i = 0; (i < this->futureBufferSize - 1) && !this->inputFileStream.eof(); i++)
-        {
-            this->futureBuffer.push_back(this->inputFileStream.get());
-        }
-
-        while (!this->futureBuffer.empty())
-        {
-            if (!this->inputFileStream.eof())
-            {
-                this->futureBuffer.push_back(this->inputFileStream.get());
-            }
-
-            std::list<char>::iterator historyBufferIterator = this->historyBuffer.begin();
-            // std::clog << "*historyBufferIterator: " << *historyBufferIterator << " | ";
-            std::list<char>::iterator futureBufferIterator = this->futureBuffer.begin();
-            // std::clog << "*futureBufferIterator: " << *futureBufferIterator << std::endl;
-
-            if (*futureBufferIterator == '>' && !this->futureBuffer.empty())
-            {
-                std::clog << "*futureBufferIterator: " << *futureBufferIterator << " | ";
-                std::advance(futureBufferIterator, 1);
-                std::clog << "*futureBufferIterator: " << *futureBufferIterator << std::endl;
-                this->outputFileStream << *futureBufferIterator;
-                this->historyBufferMakeSpace();
-                this->historyBuffer.push_back(*futureBufferIterator);
-                this->futureBuffer.pop_front();
-                this->futureBuffer.pop_front();
-            }
-            else if (*futureBufferIterator == '<' && !this->futureBuffer.empty())
-            {
-                std::string distanceString;
-                long distance;
-                do
-                {
-                    std::advance(futureBufferIterator, 1);
-                    distanceString += *futureBufferIterator;
-                    std::clog << "distanceString: " << distanceString << " | ";
-                } while (*futureBufferIterator != ',');
-                distanceString = distanceString.substr(0, distanceString.length() - 1);
-                std::clog << "distanceString: " << distanceString << std::endl;
-                distance = std::stol(distanceString);
-
-                std::string lengthString;
-                long length;
-                do
-                {
-                    std::advance(futureBufferIterator, 1);
-                    lengthString += *futureBufferIterator;
-                    std::clog << "lengthString: " << lengthString << " | ";
-                } while ((*futureBufferIterator != '>' && *futureBufferIterator != '<') && futureBufferIterator != this->futureBuffer.end());
-                lengthString = lengthString.substr(0, lengthString.length() - 1);
-                std::clog << "lengthString: " << lengthString << std::endl;
-                length = std::stol(lengthString);
-
-                historyBufferIterator = this->historyBuffer.end();
-                std::advance(historyBufferIterator, -(distance));
-                for (int i = 0; i < length; i++)
-                {
-                    this->outputFileStream << *historyBufferIterator;
-                    if (this->historyBufferMakeSpace())
-                    {
-                        historyBufferIterator--;
-                        std::clog << "historyBufferMakeSpace-- | *historyBufferIterator: " << *historyBufferIterator;
-                    }
-                    this->historyBuffer.push_back(*historyBufferIterator);
-                    std::clog << "*historyBufferIterator: " << *historyBufferIterator << " | ";
-                    historyBufferIterator++;
-                }
-                std::clog << std::endl;
-                for (int i = 0; i < (distanceString.length() + lengthString.length() + 2); i++)
-                {
-                    this->futureBuffer.pop_front();
-                }
-            }
-            else
-            {
-                if (futureBufferIterator != this->futureBuffer.end())
-                {
-                    std::advance(futureBufferIterator, 1);
-                }
-                this->futureBuffer.pop_front();
-            }
-        }
-
-        this->inputFileStream.close();
-        this->outputFileStream.close();
-    }
 }
