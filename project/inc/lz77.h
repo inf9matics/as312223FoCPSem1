@@ -25,14 +25,15 @@ class Lz77Prepend {
 private:
     std::vector<char> bytesVector;
     std::vector<std::vector<char>> bitsVectorSeparated;
+    std::vector<std::vector<char>> bitsVectorSeparatedPatternLength;
     bool foundPattern;
     char startingByte;
     char ongoingByte;
     char ongoingStartingByte;
 
-    char createPrependByte(std::vector<char>& numberBitVector, int from);
     void createPrepend(long& numberToConvert, long& patternLength);
     void prepareBitsVectorSepareted(std::vector<char>& bitsVector);
+    void prepareBitsVectorSeparetedPatternLength(std::vector<char>& bitsVector);
 
 public:
     Lz77Prepend(long numberToConvert, long patternLength);

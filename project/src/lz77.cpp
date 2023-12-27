@@ -8,7 +8,7 @@
 #include <vector>
 #include <list>
 
-Lz77Prepend::Lz77Prepend(long numberToConvert, long patternLength = 0) {
+Lz77Prepend::Lz77Prepend(long numberToConvert, long patternLength) {
     if (patternLength != 0) {
         this->foundPattern = true;
         startingByte = 1 << 7;
@@ -41,13 +41,27 @@ void Lz77Prepend::prepareBitsVectorSepareted(std::vector<char>& bitsVector) {
         }
     }
 
+void Lz77Prepend::prepareBitsVectorSeparetedPatternLength(std::vector<char>& bitsVector) {
+    std::vector<char>::iterator it = bitsVector.begin();
+    std::vector<char> tempVector;
+    tempVector.clear();
+    while (it != bitsVector.end()) {
+        for (int i = 0; i < 7 && it != bitsVector.end(); i++) {
+            tempVector.push_back(*it);
+            std::advance(it, 1);
+            }
+        this->bitsVectorSeparatedPatternLength.push_back(tempVector);
+        tempVector.clear();
+        }
+    }
+
 void Lz77Prepend::createPrepend(long& numberToConvert, long& patternLength) {
     std::vector<char> numberBitVector = TMathUtilities::bitVectorFromNumber(numberToConvert);
     this->prepareBitsVectorSepareted(numberBitVector);
     numberBitVector.clear();
     char currentByte = this->startingByte;
     for (int i = 0; i < this->bitsVectorSeparated.at(0).size(); i++) {
-        currentByte += bitsVectorSeparated.at(0).at(i) << i;
+        currentByte += bitsVectorSeparated.at(0).at(i) << (5 - i);
         }
     if (this->bitsVectorSeparated.size() > 1) {
         currentByte += this->ongoingStartingByte;
@@ -56,24 +70,32 @@ void Lz77Prepend::createPrepend(long& numberToConvert, long& patternLength) {
     for (int i = 1; i < this->bitsVectorSeparated.size() - 1; i++) {
         currentByte = this->ongoingByte;
         for (int j = 0; j < this->bitsVectorSeparated.at(i).size(); j++) {
-            currentByte += this->bitsVectorSeparated.at(i).at(j) << j;
+            currentByte += this->bitsVectorSeparated.at(i).at(j) << (6 - j);
             }
         this->bytesVector.push_back(currentByte);
         }
     currentByte = 0;
     for (int i = 0; i < this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).size(); i++) {
-        currentByte += this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).at(i) << i;
+        currentByte += this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).at(i) << (6 - i);
         }
     this->bytesVector.push_back(currentByte);
-    }
-
-char Lz77Prepend::createPrependByte(std::vector<char>& numberBitVector, int from) {
-    char currentByte = 0;
-    for (int i = 0; i < 7 && (i + from) < numberBitVector.size(); i++) {
-        int iCorrected = i + from;
-        currentByte += numberBitVector.at(iCorrected) << (i);
+    if (this->foundPattern) {
+        currentByte = 0;
+        numberBitVector = TMathUtilities::bitVectorFromNumber(patternLength);
+        this->prepareBitsVectorSeparetedPatternLength(numberBitVector);
+        for (int i = 0; i < this->bitsVectorSeparatedPatternLength.size() - 1; i++) {
+            currentByte += this->ongoingByte;
+            for (int j = 0; j < this->bitsVectorSeparatedPatternLength.at(i).size(); j++) {
+                currentByte += this->bitsVectorSeparatedPatternLength.at(i).at(j) << (6 - j);
+                }
+            this->bytesVector.push_back(currentByte);
+            }
+        currentByte = 0;
+        for (int i = 0; i < this->bitsVectorSeparatedPatternLength.at(this->bitsVectorSeparatedPatternLength.size() - 1).size(); i++) {
+            currentByte += this->bitsVectorSeparatedPatternLength.at(this->bitsVectorSeparatedPatternLength.size() - 1).at(i) << (6 - i);
+            }
         }
-    return currentByte;
+    this->bytesVector.push_back(currentByte);
     }
 
 char Lz77Prepend::at(int n) {
