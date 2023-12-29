@@ -98,8 +98,6 @@ private:
      */
     std::ofstream outputFileStream;
 
-    std::string compressionMode;
-
     /**
      * @brief Dev variable for logging.
      * @details #log exists for outputting logs in certain scenarios in the development process.\n
@@ -127,7 +125,7 @@ public:
         @param argc the number of arguments passed down from cli
         @param argv the array containing cli arguments
     */
-    Lz77(std::string inputFileName, std::string outputFileName, std::string compressionMode, long historyBufferSize, long inputBufferSize);
+    Lz77(std::string inputFileName, std::string outputFileName, long historyBufferSize, long inputBufferSize);
 
     /**
      * @brief Function returning value of argument from cli.

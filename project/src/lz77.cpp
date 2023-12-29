@@ -180,10 +180,9 @@ void Lz77::openOutputFile() {
         }
     }
 
-Lz77::Lz77(std::string inputFileName, std::string outputFileName, std::string compressionMode, long historyBufferSize, long inputBufferSize) {
+Lz77::Lz77(std::string inputFileName, std::string outputFileName, long historyBufferSize, long inputBufferSize) {
     this->inputFileName = inputFileName;
     this->outputFileName = outputFileName;
-    this->compressionMode = compressionMode;
     this->historyBufferSize = historyBufferSize;
     this->inputBufferSize = inputBufferSize;
 
@@ -319,19 +318,19 @@ void Lz77::decompress() {
     this->outputFileStream.close();
     }
 
-void Lz77::run() {
-    if (this->compressionMode == "c" || this->compressionMode == "-c") {
-        this->compress();
-        }
-    else if (this->compressionMode == "d" || this->compressionMode == "-d") {
-        this->decompress();
-        }
-    }
-
 Lz77CliArguments::Lz77CliArguments(int argc, char** argv) {
-    this->cliArguments = new CliArguments(argc, argv, this->requiredParameters);
+    std::string helpDialog = "This is the help dialog for lz77 compression";
+    this->cliArguments = new CliArguments(argc, argv, this->requiredParameters, helpDialog);
     if (this->cliArguments->isPrepared()) {
-        this->lz77 = new Lz77(this->cliArguments->at("-i"), this->cliArguments->at("-o"), this->cliArguments->at("-t"), std::stol(this->cliArguments->at("-n")), std::stol(this->cliArguments->at("-k")));
+        this->lz77 = new Lz77(this->cliArguments->at("-i"), this->cliArguments->at("-o"), std::stol(this->cliArguments->at("-n")), std::stol(this->cliArguments->at("-k")));
+        if (this->cliArguments->at("-t") == "c") {
+            std::clog << "Compressing";
+            this->lz77->compress();
+            }
+        else if (this->cliArguments->at("-t") == "d") {
+            std::clog << "Decompressing";
+            this->lz77->decompress();
+            }
         }
     else {
         abort;
