@@ -3,22 +3,17 @@
 #include "tStringUtilities.h"
 
 #include <vector>
+#include <string>
 
-int main(int argc, char **argv){
-    // Lz77 fileToCompress {argc, argv};
-    // if(fileToCompress.argument("-t") == "c"){
-    //     fileToCompress.compress();
-    // }
-    // else if(fileToCompress.argument("-t") == "d"){
-    //     fileToCompress.decompress();
-    // }
+#include <vector>
 
-    long x = 63643;
-    long y = 12355;
-    Lz77Prepend test1 {x, y};
-    for(int i=0; i<test1.size(); i++){
-        std::cout << TStringUtilities::byteToBitString(test1.at(i)) << std::endl;
-    }
+int main(int argc, char** argv) {
+    // Lz77CliArguments fileToCompress { argc, argv };
+
+    Lz77 lz77Compress { "project_test1.raw.txt", "project_test1.txt.compressed", "c", 4096000, 4096000 };
+    lz77Compress.run();
+    Lz77 lz77Decompress { "project_test1.txt.compressed", "project_test1.decompressed.txt", "d", 4096000, 4096000 };
+    lz77Decompress.run();
 
     return 0;
-}
+    }

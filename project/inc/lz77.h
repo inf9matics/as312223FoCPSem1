@@ -18,12 +18,12 @@
 
 /**
  * @brief Class Lz77 responsible for lz77 compression.
- * @details The class in itself assumes it's going to be run from cli along with parameters, therefore it has a member of class CliArguments.
+ * @details The class won't 
  */
 
 class Lz77Prepend {
 private:
-    std::vector<char> bytesVector;
+    std::list<char> bytesList;
     std::vector<std::vector<char>> bitsVectorSeparated;
     std::vector<std::vector<char>> bitsVectorSeparatedPatternLength;
     bool foundPattern;
@@ -37,7 +37,7 @@ private:
 
 public:
     Lz77Prepend(long numberToConvert, long patternLength);
-    char at(int n);
+    std::list<char>::iterator bytesListIterator;
     char next();
     int size();
     };
@@ -50,7 +50,7 @@ private:
      * Can be larger than the file itself.\n
      * The member #historyBuffer will use at most this amount of memory (bytes).
      */
-    int historyBufferSize;
+    long historyBufferSize;
 
     /**
      * @brief Future buffer for sliding window size.
@@ -58,7 +58,20 @@ private:
      * Can be larger than the file itself.\n
      * The member #inputBuffer will use at most this amount of memory (bytes).
      */
-    int inputBufferSize;
+    long inputBufferSize;
+
+    /**
+     * @brief File buffer size.
+     * @details #bufferSize is a temporal "implementation" of a file input buffer.\n
+     * It's calculated from #futureBufferSize.
+     */
+    long bufferSize;
+
+    std::list<char> buffer;
+
+    bool fillBuffer();
+
+    std::string inputFileName;
 
     /**
      * @brief Input file stream.
@@ -67,6 +80,8 @@ private:
      */
     std::ifstream inputFileStream;
 
+    std::string outputFileName;
+
     /**
      * @brief Output file stream.
      * @details #outputFileStream is inherited from the "-o" cli parameter from #requiredParameters.\n
@@ -74,12 +89,7 @@ private:
      */
     std::ofstream outputFileStream;
 
-    /**
-     * @brief File buffer size.
-     * @details #bufferSize is a temporal "implementation" of a file input buffer.\n
-     * It's calculated from #futureBufferSize.
-     */
-    int bufferSize;
+    std::string compressionMode;
 
     /**
      * @brief Dev variable for logging.
@@ -87,34 +97,6 @@ private:
      * It's not called from outside and is currently set via the constructor Lz77().
      */
     bool log;
-
-    /**
-     * @brief Variable containing required cli parameters.
-     * @details #requiredParameters holds a set list of members:
-     *  - "-i"\n
-     *      This parameter governs the name of the input file.
-     *  - "-o"\n
-     *      This parameter governs the name of the output file.
-     *  - "-t"\n
-     *      This parameter should have one of 2 possible values:
-     *          -# "c"\n
-     *              It signifies compression mode.
-     *          -# "d"\n
-     *              It signifies decompression mode.
-     *  - "-n"\n
-     *      This parameter governs #historyBufferSize.
-     *  - "-k"\n
-     *      This parameter governs #inputBufferSize.
-     */
-
-    std::vector<std::string> requiredParameters;
-
-    /**
-     * @brief Member handling cli arguments.
-     * @details #cliArguments is an object of class CliArguments.
-     * Values for it are set in the Lz77() constructor.
-     */
-    CliArguments* cliArguments;
 
     /*!
         @brief Function handling input file opening.
@@ -136,7 +118,7 @@ public:
         @param argc the number of arguments passed down from cli
         @param argv the array containing cli arguments
     */
-    Lz77(int argc, char** argv);
+    Lz77(std::string inputFileName, std::string outputFileName, std::string compressionMode, long historyBufferSize, long inputBufferSize);
 
     /**
      * @brief Function returning value of argument from cli.
@@ -149,4 +131,22 @@ public:
     void compress();
 
     void decompress();
+
+    void run();
+    };
+
+class Lz77CliArguments {
+private:
+    std::vector<std::string> requiredParameters{
+        "-i",
+        "-o",
+        "-t",
+        "-n",
+        "-k"
+        };
+    CliArguments* cliArguments;
+
+public:
+    Lz77CliArguments(int argc, char** argv);
+    Lz77* lz77;
     };
