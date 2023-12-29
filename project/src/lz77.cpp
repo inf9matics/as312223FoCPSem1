@@ -124,6 +124,13 @@ void Lz77::openOutputFile() {
         }
     }
 
+void Lz77::fillBuffer() {
+    std::clog << "Filling buffer" << std::endl;
+    for (int i = 0; i < this->bufferSize && this->inputFileStream.peek() != EOF; i++) {
+        this->buffer.push_back(this->inputFileStream.get());
+        }
+    }
+
 Lz77::Lz77(int argc, char** argv) {
     std::string requiredParametersArray[5] = {
         "-i",
@@ -152,6 +159,94 @@ std::string Lz77::argument(std::string i) {
     }
 
 void Lz77::compress() {
+    this->openInputFile();
+    this->openOutputFile();
+    this->fillBuffer();
+    std::list<char>::iterator currentByteIterator;
+    currentByteIterator = this->buffer.begin();
+    std::advance(currentByteIterator, 1);
+    std::clog << "Advanced currentByteIterator" << std::endl;
+    std::list<char>::iterator historyCurrentByteIterator;
+    historyCurrentByteIterator = this->buffer.begin();
+    std::list<char>::iterator futureCurrentByteIterator;
+    futureCurrentByteIterator = currentByteIterator;
+    int noPatternLength = 0;
+    bool foundPattern = false;
+    while (!this->buffer.empty()) {
+        std::clog << "Iterating over buffer" << std::endl;
+        while (historyCurrentByteIterator != currentByteIterator) {
+            std::clog << "Iterating over historyCurrentByteIterator" << std::endl;
+            if (*historyCurrentByteIterator == *currentByteIterator) {
+                std::clog << "Found byte match: " << *historyCurrentByteIterator << " " << *currentByteIterator << std::endl;
+                int patternDistance = std::distance(historyCurrentByteIterator, currentByteIterator);
+                futureCurrentByteIterator = currentByteIterator;
+                bool patternEnded = false;
+                int patternLength = 1;
+                for (int i = 0; i < this->inputBufferSize && futureCurrentByteIterator != this->buffer.end() && !patternEnded; i++) {
+                    std::advance(historyCurrentByteIterator, 1);
+                    std::advance(futureCurrentByteIterator, 1);
+                    if (*historyCurrentByteIterator != *futureCurrentByteIterator) {
+                        patternEnded = true;
+                        }
+                    else {
+                        patternLength++;
+                        }
+                    }
+                Lz77Prepend patternPrepend{ patternDistance, patternLength };
+                if (patternPrepend.size() >= patternLength) {
+                    foundPattern = true;
+                    if (noPatternLength > 0) {
+                        std::clog << "Writing noPatternPrepend" << std::endl;
+                        Lz77Prepend noPatternPrepend{ noPatternLength, 0 };
+                        noPatternLength = 0;
+                        for (int i = 0; i < noPatternPrepend.size(); i++) {
+                            this->outputFileStream << noPatternPrepend.at(i);
+                            }
+                        std::advance(historyCurrentByteIterator, -noPatternLength);
+                        std::clog << "Writing noPattern raw bytes" << std::endl;
+                        for (int i = 0; i < noPatternLength; i++) {
+                            this->outputFileStream << *historyCurrentByteIterator;
+                            this->buffer.pop_front();
+                            }
+                        historyCurrentByteIterator = this->buffer.begin();
+                        }
+                    std::clog << "Writing patternPrepend" << std::endl;
+                    for (int i = 0; i < patternPrepend.size(); i++) {
+                        this->outputFileStream << patternPrepend.at(i);
+                        }
+                    }
+                }
+            else {
+                noPatternLength++;
+                }
+            std::advance(historyCurrentByteIterator, 1);
+            }
+
+        if (noPatternLength == this->historyBufferSize) {
+            std::clog << "noPatternLength same as historyBufferSize" << std::endl;
+            Lz77Prepend noPatternPrepend{ noPatternLength, 0 };
+            noPatternLength = 0;
+            for (int i = 0; i < noPatternPrepend.size(); i++) {
+                this->outputFileStream << noPatternPrepend.at(i);
+                }
+            for (int i = 0; i < this->historyBufferSize; i++) {
+                this->outputFileStream << *historyCurrentByteIterator;
+                this->buffer.pop_front();
+                std::advance(historyCurrentByteIterator, 1);
+                }
+            historyCurrentByteIterator = this->buffer.begin();
+            }
+        std::advance(currentByteIterator, 1);
+        std::clog << "Advanced currentByteIterator: " << *currentByteIterator << std::endl;
+        std::advance(historyCurrentByteIterator, 1);
+        std::clog << "Advanced historyCurrentByteIterator: " << *historyCurrentByteIterator << std::endl;
+        std::clog << "buffer.size(): " << this->buffer.size() << std::endl;
+        if (this->buffer.empty()) {
+            this->fillBuffer();
+            }
+        }
+    this->inputFileStream.close();
+    this->outputFileStream.close();
     }
 
 void Lz77::decompress() {

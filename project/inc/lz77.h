@@ -82,6 +82,18 @@ private:
     int bufferSize;
 
     /**
+     * @brief File buffer.
+     * @details #buffer is the buffer for reading the file.
+     */
+    std::list<char> buffer;
+
+    /**
+     * @brief Function that fills #buffer.
+     * @details This function fills #buffer to #bufferSize or #inputFileStream end
+     */
+    void fillBuffer();
+
+    /**
      * @brief Dev variable for logging.
      * @details #log exists for outputting logs in certain scenarios in the development process.\n
      * It's not called from outside and is currently set via the constructor Lz77().
