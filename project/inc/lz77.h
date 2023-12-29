@@ -71,6 +71,8 @@ private:
 
     bool fillBuffer();
 
+    bool clearBuffer();
+
     std::string inputFileName;
 
     /**
