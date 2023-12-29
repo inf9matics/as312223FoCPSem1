@@ -110,6 +110,58 @@ int Lz77Prepend::size() {
     return this->bytesList.size();
     }
 
+Lz77PrependData Lz77Prepend::prependDataFromBytes(std::ifstream& inputFileStream) {
+    Lz77PrependData prependData;
+    std::vector<int> bitVector;
+    std::vector<int> patternLengthBitVector;
+    char currentByte;
+    currentByte = inputFileStream.get();
+    if ((currentByte >> 7 & 1) == 1) {
+        prependData.patternFound = true;
+        }
+    else {
+        prependData.patternFound = false;
+        }
+
+    for (int i = 0; i < 5; i++) {
+        bitVector.push_back(currentByte >> (4 - i) & 1);
+        }
+    if (prependData.patternFound) {
+        for (int i = 0; i < 5; i++) {
+            patternLengthBitVector.push_back(currentByte >> (4 - i) & 1);
+            }
+        }
+
+    if ((currentByte >> 6 & 1) == 0) {
+        TMathUtilities::flipIntVector(bitVector);
+        prependData.prependNumber = TMathUtilities::longFromBitVector(bitVector);
+        if (prependData.patternFound) {
+            TMathUtilities::flipIntVector(patternLengthBitVector);
+            prependData.patternLength = TMathUtilities::longFromBitVector(patternLengthBitVector);
+            }
+        }
+
+    while ((currentByte >> 7 & 1) == 1) {
+        for (int i = 0; i < 7; i++) {
+            bitVector.push_back(currentByte >> (6 - i) & 1);
+            }
+        currentByte = inputFileStream.get();
+        }
+    TMathUtilities::flipIntVector(bitVector);
+    prependData.prependNumber = TMathUtilities::longFromBitVector(bitVector);
+    while ((currentByte >> 7 & 1) == 1 && prependData.patternFound) {
+        for (int i = 0; i < 7; i++) {
+            patternLengthBitVector.push_back(currentByte >> (6 - i) & 1);
+            }
+        currentByte = inputFileStream.get();
+        }
+    if (prependData.patternFound) {
+        TMathUtilities::flipIntVector(patternLengthBitVector);
+        prependData.patternLength = TMathUtilities::longFromBitVector(patternLengthBitVector);
+        }
+    return prependData;
+    }
+
 void Lz77::openInputFile() {
     try {
         this->inputFileStream.open(this->inputFileName, std::ios::binary);
@@ -181,22 +233,22 @@ void Lz77::compress() {
                 }
             else {
                 noPatternLength++;
-                }          
+                }
             }
         Lz77Prepend patternPrepend{ patternDistance, patternLength };
         Lz77Prepend noPatternPrepend{ noPatternLength, 0 };
         if (patternPrepend.size() < patternLength && patternLength > 0) {
-            for(int i=0; i<noPatternPrepend.size(); i++){
+            for (int i = 0; i < noPatternPrepend.size(); i++) {
                 this->outputFileStream << *noPatternPrepend.bytesListIterator;
                 noPatternPrepend.bytesListIterator++;
-            }
+                }
             char writeBuffer[patternDistance];
             std::list<char>::iterator writeIterator = currentByteIterator;
             std::advance(writeIterator, -patternDistance);
-            for(int i=0; i<patternDistance; i++){
+            for (int i = 0; i < patternDistance; i++) {
                 writeBuffer[i] = *writeIterator;
                 writeIterator++;
-            }
+                }
             this->outputFileStream.write(writeBuffer, patternDistance);
             noPatternLength = 0;
             for (int i = 0; i < patternPrepend.size(); i++) {
@@ -235,6 +287,33 @@ void Lz77::compress() {
 void Lz77::decompress() {
     this->openInputFile();
     this->openOutputFile();
+
+    char currentByte;
+    std::list<char> bitList;
+    currentByte = this->inputFileStream.get();
+    std::list<char> buffer;
+    while (this->inputFileStream.peek() != EOF) {
+        Lz77PrependData prependData = Lz77Prepend::prependDataFromBytes(this->inputFileStream);
+        if (prependData.patternFound) {
+            std::list<char>::iterator bufferIterator = buffer.end();
+            std::advance(bufferIterator, -prependData.prependNumber);
+            while (bufferIterator != buffer.end()) {
+                this->outputFileStream << *bufferIterator;
+                bufferIterator++;
+                }
+            }
+        else {
+            char writeBuffer[prependData.prependNumber];
+            this->inputFileStream.read(writeBuffer, prependData.prependNumber);
+            this->outputFileStream.write(writeBuffer, prependData.prependNumber);
+            for (int i = 0; i < prependData.prependNumber; i++) {
+                buffer.push_back(writeBuffer[i]);
+                }
+            }
+        if (buffer.size() > this->historyBufferSize) {
+            buffer.pop_front();
+            }
+        }
 
     this->inputFileStream.close();
     this->outputFileStream.close();

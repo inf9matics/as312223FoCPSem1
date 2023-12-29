@@ -21,6 +21,12 @@
  * @details The class won't 
  */
 
+struct Lz77PrependData {
+    long prependNumber;
+    long patternLength;
+    bool patternFound;
+};
+
 class Lz77Prepend {
 private:
     std::list<char> bytesList;
@@ -40,6 +46,7 @@ public:
     std::list<char>::iterator bytesListIterator;
     char next();
     int size();
+    static Lz77PrependData prependDataFromBytes(std::ifstream& inputFileStream);
     };
 
 class Lz77 {

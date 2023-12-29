@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <vector>
+#include <list>
 
 int TMathUtilities::minOrHigher(int n, int min) {
     if (n < min) {
@@ -59,4 +60,21 @@ void TMathUtilities::flipCharVector(std::vector<char>& vector) {
         vector.at(i) = vector.at(vector.size() - 1 - i);
         vector.at(vector.size() - 1 - i) = temp;
         }
+    }
+
+void TMathUtilities::flipIntVector(std::vector<int>& vector) {
+    int vectorMiddle = (vector.size() - 1) / 2;
+    for (int i = 0; i <= vectorMiddle; i++) {
+        char temp = vector.at(i);
+        vector.at(i) = vector.at(vector.size() - 1 - i);
+        vector.at(vector.size() - 1 - i) = temp;
+        }
+    }
+
+long TMathUtilities::longFromBitVector(std::vector<int>& bitVector) {
+    long result = 0;
+    for (int i = 1; i <= bitVector.size(); i++) {
+        result += bitVector.at(i-1) * std::pow(2, i);
+        }
+    return result;
     }

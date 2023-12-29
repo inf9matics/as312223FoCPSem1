@@ -11,4 +11,6 @@ public:
     static int bitAtN(long x, int n);
     static std::vector<char> bitVectorFromNumber(long x);
     static void flipCharVector(std::vector<char>& vector);
+    static void flipIntVector(std::vector<int>& vector);
+    static long longFromBitVector(std::vector<int>& bitVector);
     };
