@@ -79,10 +79,13 @@ void Lz77Prepend::createPrepend(long& numberToConvert, long& patternLength) {
         this->bytesList.push_back(currentByte);
         }
     currentByte = 0;
-    for (int i = 0; i < this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).size(); i++) {
-        currentByte += this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).at(i) << (6 - i);
+    if (this->bitsVectorSeparated.size() > 1) {
+        for (int i = 0; i < this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).size(); i++) {
+            currentByte += this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).at(i) << (6 - i);
+            }
+        this->bytesList.push_back(currentByte);
         }
-    this->bytesList.push_back(currentByte);
+
     if (this->foundPattern) {
         currentByte = 0;
         numberBitVector = TMathUtilities::bitVectorFromNumber(patternLength);
@@ -98,8 +101,8 @@ void Lz77Prepend::createPrepend(long& numberToConvert, long& patternLength) {
         for (int i = 0; i < this->bitsVectorSeparatedPatternLength.at(this->bitsVectorSeparatedPatternLength.size() - 1).size(); i++) {
             currentByte += this->bitsVectorSeparatedPatternLength.at(this->bitsVectorSeparatedPatternLength.size() - 1).at(i) << (6 - i);
             }
+            this->bytesList.push_back(currentByte);
         }
-    this->bytesList.push_back(currentByte);
     }
 
 char Lz77Prepend::next() {
@@ -213,70 +216,72 @@ void Lz77::compress() {
     std::list<char>::iterator historyByteIterator = this->buffer.begin();
     std::list<char>::iterator inputByteIterator = currentByteIterator;
 
-    int noPatternLength = 0;
+    long noPatternLength = 0;
+    long patternLength;
+    long patternDistance;
     while (!this->buffer.empty() && currentByteIterator != this->buffer.end()) {
-        int patternDistance = 0;
-        int patternLength = 0;
-        for (int i = 0; i < std::distance(historyByteIterator, currentByteIterator) && std::next(historyByteIterator) != currentByteIterator; i++) {
-            if (*historyByteIterator == *currentByteIterator) {
-                patternLength = 1;
-                patternDistance = std::distance(historyByteIterator, currentByteIterator);
-                inputByteIterator = currentByteIterator;
+        if (*historyByteIterator == *currentByteIterator) {
+            patternLength = 1;
+            patternDistance = std::distance(historyByteIterator, currentByteIterator);
+            std::list<char>::iterator historyByteIteratorCopy = historyByteIterator;
+            inputByteIterator = currentByteIterator;
+            historyByteIteratorCopy++;
+            inputByteIterator++;
+            while (*historyByteIteratorCopy == *inputByteIterator && patternLength < this->inputBufferSize) {
+                patternLength++;
+                historyByteIteratorCopy++;
                 inputByteIterator++;
-                historyByteIterator++;
-                while (*historyByteIterator == *inputByteIterator && patternLength < inputBufferSize && historyByteIterator != currentByteIterator) {
-                    patternLength++;
-                    historyByteIterator++;
-                    inputByteIterator++;
+                }
+            Lz77Prepend patternPrepend{ patternDistance, patternLength };
+            if (patternLength > patternPrepend.size()) {
+                Lz77Prepend noPatternPrepend{ noPatternLength, 0 };
+
+                for (int i = 0; i < noPatternPrepend.size(); i++) {
+                    this->outputFileStream << noPatternPrepend.next();
                     }
+
+                char writeBuffer[noPatternLength];
+                std::list<char>::iterator writeByteIterator = historyByteIterator;
+                for (int i = 0; i < noPatternLength; i++) {
+                    writeBuffer[i] = *writeByteIterator;
+                    writeByteIterator++;
+                    }
+                this->outputFileStream.write(writeBuffer, noPatternLength);
+
+                for (int i = 0; i < patternPrepend.size(); i++) {
+                    this->outputFileStream << patternPrepend.next();
+                    }
+                noPatternLength = 0;
                 }
             else {
                 noPatternLength++;
                 }
             }
-        Lz77Prepend patternPrepend{ patternDistance, patternLength };
-        Lz77Prepend noPatternPrepend{ noPatternLength, 0 };
-        if (patternPrepend.size() < patternLength && patternLength > 0) {
-            for (int i = 0; i < noPatternPrepend.size(); i++) {
-                this->outputFileStream << *noPatternPrepend.bytesListIterator;
-                noPatternPrepend.bytesListIterator++;
-                }
-            char writeBuffer[patternDistance];
-            std::list<char>::iterator writeIterator = currentByteIterator;
-            std::advance(writeIterator, -patternDistance);
-            for (int i = 0; i < patternDistance; i++) {
-                writeBuffer[i] = *writeIterator;
-                writeIterator++;
-                }
-            this->outputFileStream.write(writeBuffer, patternDistance);
-            noPatternLength = 0;
-            for (int i = 0; i < patternPrepend.size(); i++) {
-                this->outputFileStream << *patternPrepend.bytesListIterator;
-                patternPrepend.bytesListIterator++;
-                }
-            std::advance(currentByteIterator, (patternLength - 1));
+        else {
+            noPatternLength++;
             }
-        else if (noPatternLength == this->historyBufferSize) {
+
+        if (noPatternLength == this->historyBufferSize || noPatternLength == this->bufferSize) {
+            Lz77Prepend noPatternPrepend{ noPatternLength, 0 };
             for (int i = 0; i < noPatternPrepend.size(); i++) {
-                this->outputFileStream << *noPatternPrepend.bytesListIterator;
-                noPatternPrepend.bytesListIterator++;
+                this->outputFileStream << noPatternPrepend.next();
                 }
+            std::list<char>::iterator writeByteIterator = currentByteIterator;
+            std::advance(writeByteIterator, -noPatternLength);
             char writeBuffer[noPatternLength];
-            std::list<char>::iterator writeIterator = currentByteIterator;
-            std::advance(writeIterator, -noPatternLength);
             for (int i = 0; i < noPatternLength; i++) {
-                writeBuffer[i] = *writeIterator;
-                writeIterator++;
+                writeBuffer[i] = *writeByteIterator;
+                writeByteIterator++;
                 }
             this->outputFileStream.write(writeBuffer, noPatternLength);
-            noPatternLength = 0;
             }
-        currentByteIterator++;
 
-        if (std::distance(this->buffer.begin(), currentByteIterator) > historyBufferSize) {
+        if (std::distance(this->buffer.begin(), currentByteIterator) > this->bufferSize) {
             this->buffer.pop_front();
-            this->fillBuffer();
             }
+        historyByteIterator = this->buffer.begin();
+        currentByteIterator++;
+        this->fillBuffer();
         }
 
     this->inputFileStream.close();
