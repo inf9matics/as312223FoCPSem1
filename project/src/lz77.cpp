@@ -330,4 +330,4 @@ Lz77CliArguments::Lz77CliArguments(int argc, char** argv) {
     else {
         abort;
         }
-    }
+    }    
