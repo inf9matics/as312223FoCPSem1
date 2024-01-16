@@ -198,12 +198,10 @@ private:
     void openOutputFile();
 
     /**
-     * @brief Function returning the longest match found in a window (or no match).
-     * @param windowBeginning The beginning of the current window.
-     * @param windowCurrentEnd The current byte before the "input" part of the window.
+     * @brief Function returning the longest match found in current #buffer (or no match).
      * @return Lz77Match Match information.
      */
-    Lz77Match findLongestMatch(std::list<char>::iterator windowBeginning, std::list<char>::iterator windowCurrentEnd);
+    Lz77Match findLongestMatch();
 
 public:
     /**
