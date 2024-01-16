@@ -71,13 +71,13 @@ class CliArguments{
 
     public:
     /**
-     * @brief Construct a new Cli Arguments object
+     * @brief Construct a new CliArguments object
      * @details This constructor internally prepares the object and sets #prepared at the end.
-     * @param argc The length of argv.
-     * @param argv Basic array of C-strings.
+     * @param argc Cli argument count.
+     * @param argv Cli argument table.
      * @param upstreamParameters A std::vector that sets #requiredParameters.
      */
-    CliArguments(int argc, char **argv, std::vector<std::string> upstreamParameters);
+    CliArguments(int argc, char **argv, std::vector<std::string> upstreamParameters, std::string helpDialog);
 
     /**
      * @brief Function that returns #prepared
@@ -92,7 +92,7 @@ class CliArguments{
      * @details This returns #helpDialog in a std::string form.
      * @return std::string #helpDialog.
      */
-    std::string getHelpDialog();
+    void printHelpDialog();
 
     /**
      * @brief Returns #cliArguments.at n.
@@ -101,4 +101,12 @@ class CliArguments{
      * @return std::string Value of #cliArguments at n.
      */
     std::string at(std::string n);
+
+    /**
+     * @brief Checks whether a key exists in #arguments.
+     * @param n Key value to check.
+     * @return true The key exists.
+     * @return false The key does not exist.
+     */
+    bool exists(std::string n);
 };
