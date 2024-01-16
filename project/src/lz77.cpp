@@ -11,17 +11,19 @@
 
 Lz77Prepend::Lz77Prepend(long numberToConvert, long patternLength) {
     if (patternLength != 0) {
-        this->foundPattern = true;
+        this->prependData.patternFound = true;
         startingByte = 1 << 7;
         }
     else {
-        this->foundPattern = false;
+        this->prependData.patternFound = false;
         startingByte = 0;
         }
+    this->prependData.prependNumber = numberToConvert;
+    this->prependData.patternLength = patternLength;
     this->ongoingByte = 1 << 7;
     this->ongoingStartingByte = 1 << 6;
 
-    this->createPrepend(numberToConvert, patternLength);
+    this->createPrepend();
 
     this->bytesListIterator = this->bytesList.begin();
     }
@@ -59,8 +61,8 @@ void Lz77Prepend::prepareBitsVectorSeparetedPatternLength(std::vector<char>& bit
         }
     }
 
-void Lz77Prepend::createPrepend(long& numberToConvert, long& patternLength) {
-    std::vector<char> numberBitVector = TMathUtilities::bitVectorFromNumber(numberToConvert);
+void Lz77Prepend::createPrepend() {
+    std::vector<char> numberBitVector = TMathUtilities::bitVectorFromNumber(this->prependData.prependNumber);
     this->prepareBitsVectorSepareted(numberBitVector);
     numberBitVector.clear();
     char currentByte = this->startingByte;
@@ -86,9 +88,9 @@ void Lz77Prepend::createPrepend(long& numberToConvert, long& patternLength) {
         this->bytesList.push_back(currentByte);
         }
 
-    if (this->foundPattern) {
+    if (this->prependData.patternFound) {
         currentByte = 0;
-        numberBitVector = TMathUtilities::bitVectorFromNumber(patternLength);
+        numberBitVector = TMathUtilities::bitVectorFromNumber(this->prependData.patternLength);
         this->prepareBitsVectorSeparetedPatternLength(numberBitVector);
         for (int i = 0; i < this->bitsVectorSeparatedPatternLength.size() - 1; i++) {
             currentByte += this->ongoingByte;
