@@ -93,6 +93,22 @@ public:
     };
 
 /**
+ * @brief Structure containing match.
+ * @details This is used in Lz77::findLongestPattern.
+ */
+struct Lz77Match {
+    /**
+     * @brief The iterator pointing in Lz77::buffer.
+     */
+    std::list<char>::iterator patternBeginning;
+
+    /**
+     * @brief An internal implementation of Lz77Pattern.
+     */
+    Lz77Prepend *patternPrepend;
+};
+
+/**
  * @brief Class handling file compression using the lz77 algorithm.
  * @details The class locks down files only when running compress()/decompress().\n
  * It reserves memory based on #historyBufferSize and #inputBufferSize.
@@ -169,26 +185,34 @@ private:
      */
     bool log;
 
-    /*!
-        @brief Function handling input file opening.
-        @details This function will throw an exception if the #inputFileStream couldn't open a file.
-    */
+    /**
+     *  @brief Function handling input file opening.
+     *  @details This function will throw an exception if the #inputFileStream couldn't open a file.
+     */
     void openInputFile();
 
-    /*!
-        @brief Function handling output file opening.
-        @details This function will throw an exception if the #outputFileStream couldn't open a file.
-    */
+    /**
+     *  @brief Function handling output file opening.
+     *  @details This function will throw an exception if the #outputFileStream couldn't open a file.
+     */
     void openOutputFile();
 
+    /**
+     * @brief Function returning the longest match found in a window (or no match).
+     * @param windowBeginning The beginning of the current window.
+     * @param windowCurrentEnd The current byte before the "input" part of the window.
+     * @return Lz77Match Match information.
+     */
+    Lz77Match findLongestMatch(std::list<char>::iterator windowBeginning, std::list<char>::iterator windowCurrentEnd);
+
 public:
-    /*!
-        @brief Constructor for the Lz77 class.
-        @details This constructor prepares the object via cli handling.\n
-        The constructor will throw an exception and call CliArguments::getHelpDialog() in order to write a help message.
-        @param argc the number of arguments passed down from cli
-        @param argv the array containing cli arguments
-    */
+    /**
+     *  @brief Constructor for the Lz77 class.
+     *  @details This constructor prepares the object via cli handling.\n
+     *  The constructor will throw an exception and call CliArguments::getHelpDialog() in order to write a help message.
+     *  @param argc the number of arguments passed down from cli
+     *  @param argv the array containing cli arguments
+     */
     Lz77(std::string inputFileName, std::string outputFileName, long historyBufferSize, long inputBufferSize);
 
     /**
