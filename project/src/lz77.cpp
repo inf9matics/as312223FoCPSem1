@@ -208,36 +208,23 @@ void Lz77::compress() {
     this->openInputFile();
     this->openOutputFile();
 
+    this->fillBuffer();
+
     std::list<char>::iterator windowCurrentIterator = this->buffer.begin();
-    std::list<char>::iterator windowHistoryIterator = this->buffer.begin();
-    std::list<char>::iterator windowInputIterator = windowCurrentIterator;
 
     std::advance(windowCurrentIterator, 1);
 
     long noPatternLength = 0;
     long bytesInBufferAlreadyWritten = 0;
     while(!this->buffer.empty()){
-        while(*windowHistoryIterator != *windowCurrentIterator && windowHistoryIterator != windowCurrentIterator){
-            windowHistoryIterator++;
-            noPatternLength++;
-        }
-        if(*windowHistoryIterator == *windowCurrentIterator){
-            long patternLength = 1;
-            long patternDistance = std::distance(windowHistoryIterator, windowCurrentIterator);
-            windowInputIterator = windowCurrentIterator;
-            windowInputIterator++;
-            std::list<char>::iterator windowHistoryIteratorCopy = windowHistoryIterator;
-            windowHistoryIteratorCopy++;
-            while(*windowHistoryIteratorCopy == *windowInputIterator){
-                patternLength++;
+        Lz77Match currentLongestMatch = this->findLongestMatch(windowCurrentIterator);
+        windowCurrentIterator++;
+        for(long i=0; i<=currentLongestMatch.patternPrepend->size(); i++){
+            this->buffer.pop_front();
+            char inputByte = this->inputFileStream.get();
+            if(inputByte != EOF){
+                buffer.push_back(inputByte);
             }
-            Lz77Prepend patternPrepend { patternLength, patternDistance };
-            if(patternPrepend.size() < noPatternLength){
-                long currentNoPatternLength = noPatternLength - bytesInBufferAlreadyWritten;
-            }
-        }
-        else{
-            bytesInBufferAlreadyWritten = noPatternLength;
         }
     }
 
@@ -299,12 +286,54 @@ Lz77CliArguments::Lz77CliArguments(int argc, char** argv) {
         }
     }
 
-Lz77::findLongestMatch(){
+Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte){
     std::list<Lz77Match> matches;
-    std::list<char>::iterator searchIterator = this->buffer.begin();
-    while(searchIterator != this->buffer.end()){
-        if(*windowBeginning == *searchIterator && windowBeginning != searchIterator){
+    std::list<char>::iterator historyIterator = this->buffer.begin();
+    std::list<char>::iterator inputIterator = currentByte;
+    while(historyIterator != currentByte){
+        if(*historyIterator == *currentByte){
+            long patternLength = 1;
+            long patternDistance = std::distance(historyIterator, currentByte);
+            std::list<char>::iterator historyIteratorCopy = historyIterator;
+            inputIterator = currentByte;
+            historyIteratorCopy++;
+            if(std::next(inputIterator) != this->buffer.end()){
+                inputIterator++;
+            }
+            while(*inputIterator == *historyIteratorCopy){
+                patternLength++;
+                if(std::next(inputIterator) != this->buffer.end()){
+                    inputIterator++;
+                }
+                historyIteratorCopy++;
+            }
+            Lz77Prepend patternPrepend { patternLength, patternDistance };
+            Lz77Match match;
+            match.patternBeginning = historyIterator;
+            match.patternPrepend = &patternPrepend;
+            matches.push_back(match);
+            for(long i=0; i<patternLength && std::next(historyIterator) != currentByte; i++){
+                historyIterator++;
+            }
+        }
+        historyIterator++;
+    }
 
+    Lz77Match longestMatch;
+    if(!matches.empty()){
+        std::list<Lz77Match>::iterator matchesIterator = matches.begin();
+        longestMatch = matches.front();
+        while(matchesIterator != matches.end()){
+            if(matchesIterator->patternPrepend->size() > longestMatch.patternPrepend->size()){
+                longestMatch = *matchesIterator;
+            }
+            matchesIterator++;
         }
     }
+    else{
+        Lz77Prepend noPatternPrepend { std::distance(this->buffer.begin(), currentByte), 0 };
+        longestMatch.patternPrepend = &noPatternPrepend;
+        longestMatch.patternBeginning = this->buffer.begin();
+    }
+    return longestMatch;
 }

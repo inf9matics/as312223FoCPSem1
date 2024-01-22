@@ -201,7 +201,7 @@ private:
      * @brief Function returning the longest match found in current #buffer (or no match).
      * @return Lz77Match Match information.
      */
-    Lz77Match findLongestMatch();
+    Lz77Match findLongestMatch(std::list<char>::iterator currentByte);
 
 public:
     /**
