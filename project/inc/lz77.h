@@ -169,26 +169,26 @@ private:
      */
     bool log;
 
-    /*!
-        @brief Function handling input file opening.
-        @details This function will throw an exception if the #inputFileStream couldn't open a file.
-    */
+    /**
+     *  @brief Function handling input file opening.
+     *  @details This function will throw an exception if the #inputFileStream couldn't open a file.
+     */
     void openInputFile();
 
-    /*!
-        @brief Function handling output file opening.
-        @details This function will throw an exception if the #outputFileStream couldn't open a file.
-    */
+    /**
+     *  @brief Function handling output file opening.
+     *  @details This function will throw an exception if the #outputFileStream couldn't open a file.
+     */
     void openOutputFile();
 
 public:
-    /*!
-        @brief Constructor for the Lz77 class.
-        @details This constructor prepares the object via cli handling.\n
-        The constructor will throw an exception and call CliArguments::getHelpDialog() in order to write a help message.
-        @param argc the number of arguments passed down from cli
-        @param argv the array containing cli arguments
-    */
+    /**
+     *  @brief Constructor for the Lz77 class.
+     *  @details This constructor prepares the object via cli handling.\n
+     *  The constructor will throw an exception and call CliArguments::getHelpDialog() in order to write a help message.
+     *  @param argc the number of arguments passed down from cli
+     *  @param argv the array containing cli arguments
+     */
     Lz77(std::string inputFileName, std::string outputFileName, long historyBufferSize, long inputBufferSize);
 
     /**
