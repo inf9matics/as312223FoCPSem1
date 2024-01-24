@@ -93,6 +93,22 @@ public:
     };
 
 /**
+ * @brief Structure containing match.
+ * @details This is used in Lz77::findLongestPattern.
+ */
+struct Lz77Match {
+    /**
+     * @brief The iterator pointing in Lz77::buffer.
+     */
+    std::list<char>::iterator patternBeginning;
+
+    /**
+     * @brief An internal implementation of Lz77Pattern.
+     */
+    Lz77Prepend *patternPrepend;
+};
+
+/**
  * @brief Class handling file compression using the lz77 algorithm.
  * @details The class locks down files only when running compress()/decompress().\n
  * It reserves memory based on #historyBufferSize and #inputBufferSize.
@@ -180,6 +196,12 @@ private:
      *  @details This function will throw an exception if the #outputFileStream couldn't open a file.
      */
     void openOutputFile();
+
+    /**
+     * @brief Function returning the longest match found in current #buffer (or no match).
+     * @return Lz77Match Match information.
+     */
+    Lz77Match findLongestMatch(std::list<char>::iterator currentByte);
 
 public:
     /**
