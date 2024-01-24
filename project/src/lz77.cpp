@@ -10,7 +10,7 @@
 #include <list>
 #include <iterator>
 
-Lz77Prepend::Lz77Prepend(long numberToConvert, long patternLength) {
+Lz77Prepend::Lz77Prepend(long patternDistance, long patternLength) {
     if (patternLength != 0) {
         this->prependData.patternFound = true;
         startingByte = 1 << 7;
@@ -19,7 +19,7 @@ Lz77Prepend::Lz77Prepend(long numberToConvert, long patternLength) {
         this->prependData.patternFound = false;
         startingByte = 0;
         }
-    this->prependData.prependNumber = numberToConvert;
+    this->prependData.patternDistance = patternDistance;
     this->prependData.patternLength = patternLength;
     this->ongoingByte = 1 << 7;
     this->ongoingStartingByte = 1 << 6;
@@ -27,6 +27,14 @@ Lz77Prepend::Lz77Prepend(long numberToConvert, long patternLength) {
     this->createPrepend();
 
     this->bytesListIterator = this->bytesList.begin();
+    }
+
+long Lz77Prepend::distance() {
+    return this->prependData.patternDistance;
+    }
+
+long Lz77Prepend::length() {
+    return this->prependData.patternLength;
     }
 
 void Lz77Prepend::prepareBitsVectorSepareted(std::vector<char>& bitsVector) {
@@ -63,7 +71,7 @@ void Lz77Prepend::prepareBitsVectorSeparetedPatternLength(std::vector<char>& bit
     }
 
 void Lz77Prepend::createPrepend() {
-    std::vector<char> numberBitVector = TCollectionUtilities::bitVectorFromNumber(this->prependData.prependNumber);
+    std::vector<char> numberBitVector = TCollectionUtilities::bitVectorFromNumber(this->prependData.patternDistance);
     this->prepareBitsVectorSepareted(numberBitVector);
     numberBitVector.clear();
     char currentByte = this->startingByte;
@@ -116,7 +124,7 @@ int Lz77Prepend::size() {
     return this->bytesList.size();
     }
 
-Lz77PrependData Lz77Prepend::prependDataFromBytes(std::ifstream& inputFileStream) {
+Lz77PrependData Lz77Prepend::prependDataFromIfstream(std::ifstream& inputFileStream) {
     Lz77PrependData prependData;
     std::vector<int> bitVector;
     std::vector<int> patternLengthBitVector;
@@ -140,7 +148,7 @@ Lz77PrependData Lz77Prepend::prependDataFromBytes(std::ifstream& inputFileStream
 
     if ((currentByte >> 6 & 1) == 0) {
         TCollectionUtilities::flipIntVector(bitVector);
-        prependData.prependNumber = TCollectionUtilities::longFromBitVector(bitVector);
+        prependData.patternDistance = TCollectionUtilities::longFromBitVector(bitVector);
         if (prependData.patternFound) {
             TCollectionUtilities::flipIntVector(patternLengthBitVector);
             prependData.patternLength = TCollectionUtilities::longFromBitVector(patternLengthBitVector);
@@ -154,7 +162,7 @@ Lz77PrependData Lz77Prepend::prependDataFromBytes(std::ifstream& inputFileStream
         currentByte = inputFileStream.get();
         }
     TCollectionUtilities::flipIntVector(bitVector);
-    prependData.prependNumber = TCollectionUtilities::longFromBitVector(bitVector);
+    prependData.patternDistance = TCollectionUtilities::longFromBitVector(bitVector);
     while ((currentByte >> 7 & 1) == 1 && prependData.patternFound) {
         for (int i = 0; i < 7; i++) {
             patternLengthBitVector.push_back(currentByte >> (6 - i) & 1);
@@ -211,52 +219,44 @@ void Lz77::compress() {
 
     this->fillBuffer();
 
+    std::list<char>::iterator currentIterator = this->buffer.begin();
+    std::list<char>::iterator byteToWriteIterator = this->buffer.begin();
+    currentIterator++;
     while (!this->buffer.empty()) {
-        bool foundMatch;
-        std::list<char>::iterator currentByteIterator = this->buffer.begin();
-        if (std::next(currentByteIterator) != this->buffer.begin()) {
-            currentByteIterator++;
+        Lz77Match currentMatch = this->findLongestMatch(currentIterator);
+        if (!currentMatch.foundPattern) {
+            this->outputFileStream << (char)32;
+            this->outputFileStream << *byteToWriteIterator;
+            byteToWriteIterator++;
             }
-        std::list<char>::iterator writeIterator = this->buffer.begin();
-        while (!this->buffer.empty()) {
-            Lz77Match match = this->findLongestMatch(currentByteIterator);
-            char matchFirstChar = match.patternPrepend->next();
-            if ((matchFirstChar >> 7 & 1) == false) {
-                foundMatch = false;
+        else {
+            while (byteToWriteIterator != std::next(currentMatch.patternBeginning)) {
+                this->outputFileStream << (char)32;
+                this->outputFileStream << *byteToWriteIterator;
+                byteToWriteIterator++;
                 }
-            else {
-                foundMatch = true;
+            for (int i = 0; i < currentMatch.patternPrepend->size(); i++) {
+                this->outputFileStream << currentMatch.patternPrepend->next();
                 }
-
-            if (foundMatch) {
-                this->outputFileStream << matchFirstChar;
-                for (int i = 0; i < match.patternPrepend->size() - 1; i++) {
-                    this->outputFileStream << match.patternPrepend->next();
+            for (long i = 0; i < currentMatch.patternPrepend->length(); i++) {
+                if (std::next(currentIterator) != this->buffer.end()) {
+                    currentIterator++;
                     }
-                for (int i = 0; i < match.patternPrepend->size(); i++) {
-                    if (writeIterator == this->buffer.begin()) {
-                        writeIterator++;
-                        }
-                    this->buffer.pop_front();
-                    }
+                this->buffer.pop_front();
                 }
-            else {
-                if (!(std::distance(this->buffer.begin(), writeIterator) > 0)) {
-                    this->outputFileStream << (char)32;
-                    this->outputFileStream << *writeIterator;
-                    writeIterator++;
-                    }
-                }
-                if(std::next(currentByteIterator) != this->buffer.end()){
-                    currentByteIterator++;
-                }
-                else{
-                    if(writeIterator == this->buffer.begin()){
-                        writeIterator++;
-                    }
-                    this->buffer.pop_front();
-                }
+            this->buffer.pop_front();
+            byteToWriteIterator = this->buffer.begin();
             }
+        if (std::next(currentIterator) != this->buffer.end()) {
+            currentIterator++;
+            }
+        if (this->buffer.size() >= this->bufferSize || std::next(currentIterator) == this->buffer.end()) {
+            if(byteToWriteIterator == this->buffer.begin()){
+                byteToWriteIterator++;
+            }
+            this->buffer.pop_front();
+            }
+        this->fillBuffer();
         }
 
     this->inputFileStream.close();
@@ -357,7 +357,7 @@ Lz77CliArguments::Lz77CliArguments(int argc, char** argv) {
 Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte) {
     std::list<Lz77Match> matches;
     std::list<char>::iterator historyIterator = this->buffer.begin();
-    std::list<char>::iterator inputIterator = currentByte;
+    std::list<char>::iterator inputIterator;
     while (historyIterator != currentByte) {
         if (*historyIterator == *currentByte) {
             long patternLength = 1;
@@ -377,7 +377,8 @@ Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte) {
                 }
             Lz77Match match;
             match.patternBeginning = historyIterator;
-            match.patternPrepend = new Lz77Prepend { patternLength, patternDistance };
+            match.patternPrepend = new Lz77Prepend{ patternLength, patternDistance };
+            match.foundPattern = true;
             matches.push_back(match);
             for (long i = 0; i < patternLength && std::next(historyIterator) != currentByte; i++) {
                 historyIterator++;
@@ -398,9 +399,9 @@ Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte) {
             }
         }
     else {
-        Lz77Prepend noPatternPrepend{ std::distance(this->buffer.begin(), currentByte), 0 };
-        longestMatch.patternPrepend = &noPatternPrepend;
+        longestMatch.patternPrepend = new Lz77Prepend{ 1, 0 };
         longestMatch.patternBeginning = this->buffer.begin();
+        longestMatch.foundPattern = false;
         }
     return longestMatch;
     }

@@ -25,7 +25,7 @@ struct Lz77PrependData {
      * @brief First number in prepend.
      * @details It's either the length of a chunk with no pattern or the length of a pattern.
      */
-    long prependNumber;
+    long patternDistance;
 
     /**
      * @brief Length of pattern, if #patternFound.
@@ -72,12 +72,12 @@ private:
     void prepareBitsVectorSeparetedPatternLength(std::vector<char>& bitsVector);
 
 public:
-    Lz77Prepend(long numberToConvert, long patternLength);
+    Lz77Prepend(long patternDistance, long patternLength);
     std::list<char>::iterator bytesListIterator;
     char next();
 
     /**
-     * @brief Returns size of internal bytes container.
+     * @brief Function returning the size of internal bytes container.
      * @return int Size of #bytesList
      */
     int size();
@@ -89,7 +89,19 @@ public:
      * @param inputFileStream passed from Lz77::inputFileStream.
      * @return Lz77PrependData prepend data.
      */
-    static Lz77PrependData prependDataFromBytes(std::ifstream& inputFileStream);
+    static Lz77PrependData prependDataFromIfstream(std::ifstream& inputFileStream);
+
+    /**
+     * @brief Function returning the distance of pattern.
+     * @return long Lz77Prepend::patternDistance.
+     */
+    long distance();
+
+    /**
+     * @brief Function returning the length of pattern.
+     * @return long Lz77Prepend::patternLength.
+     */
+    long length();
     };
 
 /**
@@ -106,6 +118,11 @@ struct Lz77Match {
      * @brief An internal implementation of Lz77Pattern.
      */
     Lz77Prepend *patternPrepend;
+
+    /**
+     * @brief Boolean saying whether a pattern was found.
+     */
+    bool foundPattern;
 };
 
 /**
