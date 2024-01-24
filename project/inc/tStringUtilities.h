@@ -2,8 +2,7 @@
 
 #pragma once
 
-class TStringUtilities {
-public:
-    static std::string basicStringToString(char* basic_string);
-    static std::string byteToBitString(char byte);
+namespace TStringUtilities {
+    std::string basicStringToString(char* basic_string);
+    std::string byteToBitString(char byte);
     };

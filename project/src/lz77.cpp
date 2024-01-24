@@ -1,6 +1,7 @@
 #include "lz77.h"
 #include "cli.h"
 #include "tMathUtilities.h"
+#include "tCollectionUtilities.h"
 
 #include <string>
 #include <iostream>
@@ -62,7 +63,7 @@ void Lz77Prepend::prepareBitsVectorSeparetedPatternLength(std::vector<char>& bit
     }
 
 void Lz77Prepend::createPrepend() {
-    std::vector<char> numberBitVector = TMathUtilities::bitVectorFromNumber(this->prependData.prependNumber);
+    std::vector<char> numberBitVector = TCollectionUtilities::bitVectorFromNumber(this->prependData.prependNumber);
     this->prepareBitsVectorSepareted(numberBitVector);
     numberBitVector.clear();
     char currentByte = this->startingByte;
@@ -90,7 +91,7 @@ void Lz77Prepend::createPrepend() {
 
     if (this->prependData.patternFound) {
         currentByte = 0;
-        numberBitVector = TMathUtilities::bitVectorFromNumber(this->prependData.patternLength);
+        numberBitVector = TCollectionUtilities::bitVectorFromNumber(this->prependData.patternLength);
         this->prepareBitsVectorSeparetedPatternLength(numberBitVector);
         for (int i = 0; i < this->bitsVectorSeparatedPatternLength.size() - 1; i++) {
             currentByte += this->ongoingByte;
@@ -138,11 +139,11 @@ Lz77PrependData Lz77Prepend::prependDataFromBytes(std::ifstream& inputFileStream
         }
 
     if ((currentByte >> 6 & 1) == 0) {
-        TMathUtilities::flipIntVector(bitVector);
-        prependData.prependNumber = TMathUtilities::longFromBitVector(bitVector);
+        TCollectionUtilities::flipIntVector(bitVector);
+        prependData.prependNumber = TCollectionUtilities::longFromBitVector(bitVector);
         if (prependData.patternFound) {
-            TMathUtilities::flipIntVector(patternLengthBitVector);
-            prependData.patternLength = TMathUtilities::longFromBitVector(patternLengthBitVector);
+            TCollectionUtilities::flipIntVector(patternLengthBitVector);
+            prependData.patternLength = TCollectionUtilities::longFromBitVector(patternLengthBitVector);
             }
         }
 
@@ -152,8 +153,8 @@ Lz77PrependData Lz77Prepend::prependDataFromBytes(std::ifstream& inputFileStream
             }
         currentByte = inputFileStream.get();
         }
-    TMathUtilities::flipIntVector(bitVector);
-    prependData.prependNumber = TMathUtilities::longFromBitVector(bitVector);
+    TCollectionUtilities::flipIntVector(bitVector);
+    prependData.prependNumber = TCollectionUtilities::longFromBitVector(bitVector);
     while ((currentByte >> 7 & 1) == 1 && prependData.patternFound) {
         for (int i = 0; i < 7; i++) {
             patternLengthBitVector.push_back(currentByte >> (6 - i) & 1);
@@ -161,8 +162,8 @@ Lz77PrependData Lz77Prepend::prependDataFromBytes(std::ifstream& inputFileStream
         currentByte = inputFileStream.get();
         }
     if (prependData.patternFound) {
-        TMathUtilities::flipIntVector(patternLengthBitVector);
-        prependData.patternLength = TMathUtilities::longFromBitVector(patternLengthBitVector);
+        TCollectionUtilities::flipIntVector(patternLengthBitVector);
+        prependData.patternLength = TCollectionUtilities::longFromBitVector(patternLengthBitVector);
         }
     return prependData;
     }
