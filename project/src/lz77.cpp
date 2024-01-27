@@ -196,7 +196,7 @@ Lz77::Lz77(std::string inputFileName, std::string outputFileName, long historyBu
 	this->historyBufferSize = historyBufferSize;
 	this->inputBufferSize = inputBufferSize;
 
-	this->bufferSize = this->historyBufferSize + this->inputBufferSize + 1;
+	this->bufferSize = this->historyBufferSize + this->inputBufferSize;
 }
 
 bool Lz77::fillBuffer() {
@@ -220,7 +220,7 @@ void Lz77::compress() {
 	std::list<char>::iterator currentIterator = this->buffer.begin();
 	std::list<char>::iterator byteToWriteIterator = this->buffer.begin();
 	currentIterator++;
-	while (!this->buffer.empty()) {
+	while (!this->buffer.empty() && currentIterator != this->buffer.end()) {
 		Lz77Match currentMatch = this->findLongestMatch(currentIterator);
 		if (!currentMatch.foundPattern) {
 			this->outputFileStream << (char)0;
@@ -236,18 +236,21 @@ void Lz77::compress() {
 				this->outputFileStream << currentMatch.patternPrepend->next();
 			}
 			for (long i = 0; i < currentMatch.patternPrepend->length(); i++) {
-				if (std::next(currentIterator) != this->buffer.end()) {
+				if(std::next(currentIterator) != this->buffer.begin()){
+					currentIterator++;
+				}
+				if(std::next(currentIterator) != this->buffer.begin()){
 					currentIterator++;
 				}
 				this->buffer.pop_front();
 			}
-			this->buffer.pop_front();
 			byteToWriteIterator = this->buffer.begin();
+			std::advance(byteToWriteIterator, currentMatch.patternPrepend->length());
 		}
-		if (std::next(currentIterator) != this->buffer.end()) {
+		if (currentIterator != std::next(this->buffer.end())) {
 			currentIterator++;
 		}
-		if (this->buffer.size() >= this->bufferSize || (this->buffer.size() > 0 && std::next(currentIterator) == this->buffer.end())) {
+		if (this->buffer.size() >= this->bufferSize || (this->buffer.size() > 0 && currentIterator == this->buffer.end())) {
 			if (byteToWriteIterator == this->buffer.begin()) {
 				byteToWriteIterator++;
 			}
@@ -272,7 +275,7 @@ void Lz77::decompress() {
 		if(prependData.patternFound){
 			std::list<char>::iterator writeIterator = this->buffer.end();
 			std::advance(writeIterator, -prependData.patternDistance);
-			for(long i=1; i<prependData.patternLength; i++){
+			for(long i=0; i<prependData.patternLength; i++){
 				this->outputFileStream << *writeIterator;
 				
 				if(this->buffer.size() >= this->bufferSize){
@@ -356,6 +359,11 @@ Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte) {
 				longestMatch = *matchesIterator;
 			}
 			matchesIterator++;
+		}
+		if(longestMatch.patternPrepend->length() < 2){
+			longestMatch.patternPrepend = new Lz77Prepend{0, 0};
+			longestMatch.patternBeginning = this->buffer.begin();
+			longestMatch.foundPattern = false;
 		}
 	} else {
 		longestMatch.patternPrepend = new Lz77Prepend{1, 0};
