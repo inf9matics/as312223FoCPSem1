@@ -32,8 +32,8 @@ void TCollectionUtilities::flipIntVector(std::vector<int>& vector) {
 
 long TCollectionUtilities::longFromBitVector(std::vector<int>& bitVector) {
     long result = 0;
-    for (int i = 1; i <= bitVector.size(); i++) {
-        result += bitVector.at(i-1) * std::pow(2, i);
+    for (int i = 0; i < bitVector.size(); i++) {
+        result += bitVector.at(i) * std::pow(2, i);
         }
     return result;
     }
