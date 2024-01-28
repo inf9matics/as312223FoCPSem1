@@ -218,42 +218,24 @@ void Lz77::compress() {
 	this->fillBuffer();
 
 	std::list<char>::iterator currentIterator = this->buffer.begin();
-	std::list<char>::iterator byteToWriteIterator = this->buffer.begin();
-	currentIterator++;
 	while (!this->buffer.empty() && currentIterator != this->buffer.end()) {
 		Lz77Match currentMatch = this->findLongestMatch(currentIterator);
 		if (!currentMatch.foundPattern) {
 			this->outputFileStream << (char)0;
-			this->outputFileStream << *byteToWriteIterator;
-			byteToWriteIterator++;
+			this->outputFileStream << *currentIterator;
 		} else {
-			while (byteToWriteIterator != currentIterator) {
-				this->outputFileStream << (char)0;
-				this->outputFileStream << *byteToWriteIterator;
-				byteToWriteIterator++;
-			}
 			for (int i = 0; i < currentMatch.patternPrepend->size(); i++) {
 				this->outputFileStream << currentMatch.patternPrepend->next();
 			}
-			for (long i = 0; i < currentMatch.patternPrepend->length(); i++) {
-				if(std::next(currentIterator) != this->buffer.begin()){
-					currentIterator++;
-				}
-				if(std::next(currentIterator) != this->buffer.begin()){
+			for (long i = 0; i < currentMatch.patternPrepend->length()-1; i++) {
+				if(currentIterator != this->buffer.end()){
 					currentIterator++;
 				}
 				this->buffer.pop_front();
 			}
-			byteToWriteIterator = this->buffer.begin();
-			std::advance(byteToWriteIterator, currentMatch.patternPrepend->length());
 		}
-		if (currentIterator != std::next(this->buffer.end())) {
-			currentIterator++;
-		}
-		if (this->buffer.size() >= this->bufferSize || (this->buffer.size() > 0 && currentIterator == this->buffer.end())) {
-			if (byteToWriteIterator == this->buffer.begin()) {
-				byteToWriteIterator++;
-			}
+		currentIterator++;
+		if (this->buffer.size() >= this->bufferSize) {
 			this->buffer.pop_front();
 		}
 		this->fillBuffer();
@@ -310,7 +292,7 @@ Lz77CliArguments::Lz77CliArguments(int argc, char **argv) {
 			this->lz77->compress();
 		} else if (this->cliArguments->at("-t") == "d") {
 			std::clog << "Decompressing";
-			// this->lz77->decompress();
+			this->lz77->decompress();
 		}
 	} else {
 		abort;
