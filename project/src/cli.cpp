@@ -5,8 +5,25 @@
 #include <vector>
 
 void CliArguments::prepareStringMap() {
-	for (int i = 1; i < this->cliArgumentsCount - 1; i += 2) {
-		this->cliArguments[TStringUtilities::basicStringToString(this->cliArgumentsPointers[i])] = TStringUtilities::basicStringToString(this->cliArgumentsPointers[i + 1]);
+	for (int i = 1; i < this->cliArgumentsCount; i++) {
+		std::string currentString = TStringUtilities::basicStringToString(this->cliArgumentsPointers[i]);
+		if(currentString.substr(0, 2) == "--"){
+			this->cliArguments[currentString] = "";
+		}
+		else if(currentString.substr(0, 1) == "-"){
+			std::string nextString = "";
+			if(i+1 < this->cliArgumentsCount){
+				nextString = TStringUtilities::basicStringToString(this->cliArgumentsPointers[i+1]);
+				i++;
+			}
+			if(nextString.substr(0, 1) == "-" || nextString == ""){
+				this->cliArguments[currentString] = "";
+				i--;
+			}
+			else{
+				this->cliArguments[currentString] = nextString;
+			}
+		}
 	}
 }
 
@@ -18,7 +35,7 @@ bool CliArguments::checkParemeters() {
 
 	for (int i = 0; i < this->requiredParameters.size(); i++) {
 		if (this->cliArguments.count(this->requiredParameters.at(i)) == 0) {
-			std::clog << this->requiredParameters.at(i) << " is missing";
+			std::clog << this->requiredParameters.at(i) << " missing" << std::endl;
 			return false;
 		}
 	}
@@ -37,7 +54,7 @@ CliArguments::CliArguments(int argc, char **argv, std::vector<std::string> upstr
 
 	this->helpDialog = helpDialog;
 
-	if (this->cliArguments.find("-h") != this->cliArguments.end() || this->cliArguments.empty()) {
+	if (this->cliArguments.find("--help") != this->cliArguments.end() || this->cliArguments.empty()) {
 		this->printHelpDialog();
 		this->prepared = false;
 	}

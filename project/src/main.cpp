@@ -10,11 +10,5 @@
 int main(int argc, char** argv) {
     Lz77CliArguments fileToCompress { argc, argv };
 
-    // Lz77 testFileToCompress { "project_test1.raw.txt", "project_test1.txt.compressed", 4096000, 4096000 };
-    // testFileToCompress.compress();
-
-    // Lz77 testFileDecompress { "project_test1.txt.compressed", "project_test1.decompressed.txt", 4096000, 4096000};
-    // testFileDecompress.decompress();
-
     return 0;
     }

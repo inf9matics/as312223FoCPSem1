@@ -13,6 +13,7 @@
 #include <fstream>
 #include <vector>
 #include <list>
+#include <memory>
 
 #pragma once
 
@@ -59,6 +60,10 @@ struct Lz77PrependData {
  */
 class Lz77Prepend {
 private:
+    /**
+     * @brief List of bytes
+     * 
+     */
     std::list<char> bytesList;
     std::vector<std::vector<char>> bitsVectorSeparated;
     std::vector<std::vector<char>> bitsVectorSeparatedPatternLength;
@@ -73,7 +78,11 @@ private:
 
 public:
     Lz77Prepend(long patternDistance, long patternLength);
+
+
     std::list<char>::iterator bytesListIterator;
+
+
     char next();
 
     /**
@@ -110,14 +119,14 @@ public:
  */
 struct Lz77Match {
     /**
-     * @brief The iterator pointing in Lz77::buffer.
+     * @brief The iterator pointing in Lz77::window.
      */
     std::list<char>::iterator patternBeginning;
 
     /**
      * @brief An internal implementation of Lz77Pattern.
      */
-    Lz77Prepend *patternPrepend;
+    std::shared_ptr<Lz77Prepend> patternPrepend;
 
     /**
      * @brief Boolean saying whether a pattern was found.
@@ -133,42 +142,47 @@ struct Lz77Match {
 class Lz77 {
 private:
     /**
-     * @brief Historical buffer for sliding window size.
+     * @brief File reading buffer.
+     */
+    char *inputFileStreamBuffer;
+
+    /**
+     * @brief Historical window for sliding window size.
      * @details Can be larger than the file itself.
      */
     long historyBufferSize;
 
     /**
-     * @brief Future buffer for sliding window size.
+     * @brief Future window for sliding window size.
      * @details Can be larger than the file itself and #historyBufferSize.
      */
     long inputBufferSize;
 
     /**
-     * @brief Byte buffer size.
-     * @details #bufferSize is a temporal "implementation" of a file input buffer.\n
+     * @brief Byte window size.
+     * @details #windowSize is a temporal "implementation" of a file input window.\n
      * It's calculated from #inputBufferSize and #historyBufferSize at Lz77().
      */
-    long bufferSize;
+    long windowSize;
 
     /**
-     * @brief Byte buffer.
+     * @brief Byte window.
      * @details This container holds bytes utilized in the sliding window algorithm.
      */
-    std::list<char> buffer;
+    std::list<char> window;
 
     /**
-     * @brief Function filling #buffer.
-     * @details It fills #buffer based on whether or not it reserves the amount of memory specified via #bufferSize.
-     * @return true The function has added an element to #buffer.
+     * @brief Function filling #window.
+     * @details It fills #window based on whether or not it reserves the amount of memory specified via #windowSize.
+     * @return true The function has added an element to #window.
      * @return false The function did nothing.
      */
     bool fillBuffer();
 
     /**
-     * @brief Function clearing #buffer.
-     * @details It removes the first element of #buffer when it approaches #bufferSize.
-     * @return true The function removed an element from #buffer. 
+     * @brief Function clearing #window.
+     * @details It removes the first element of #window when it approaches #windowSize.
+     * @return true The function removed an element from #window. 
      * @return false The funciton did nothing.
      */
     bool clearBuffer();
@@ -215,7 +229,7 @@ private:
     void openOutputFile();
 
     /**
-     * @brief Function returning the longest match found in current #buffer (or no match).
+     * @brief Function returning the longest match found in current #window (or no match).
      * @return Lz77Match Match information.
      */
     Lz77Match findLongestMatch(std::list<char>::iterator currentByte);
@@ -229,6 +243,8 @@ public:
      *  @param argv the array containing cli arguments
      */
     Lz77(std::string inputFileName, std::string outputFileName, long historyBufferSize, long inputBufferSize);
+
+    ~Lz77();
 
     /**
      * @brief Function returning value of argument from cli.
@@ -280,7 +296,12 @@ private:
          * @brief Internal implementation of CliArguments.
          * @details It's a pointer so Lz77CliArguments() can assign a new CliArguments object to it.
          */
-    CliArguments* cliArguments;
+    std::unique_ptr<CliArguments> cliArguments;
+
+    /**
+     * @brief Marker meaning the arguments are correct and the object is ready for execution
+     */
+    bool prepared;
 
 public:
     /**
@@ -295,5 +316,5 @@ public:
      * @brief Internal implementation of Lz77.
      * @details It's a pointer so Lz77CliArguments() can assign a new Lz77 to it.
      */
-    Lz77* lz77;
+    std::unique_ptr<Lz77> lz77;
     };
