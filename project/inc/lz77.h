@@ -13,6 +13,7 @@
 #include <fstream>
 #include <vector>
 #include <list>
+#include <memory>
 
 #pragma once
 
@@ -73,7 +74,11 @@ private:
 
 public:
     Lz77Prepend(long patternDistance, long patternLength);
+
+
     std::list<char>::iterator bytesListIterator;
+
+
     char next();
 
     /**
@@ -117,7 +122,7 @@ struct Lz77Match {
     /**
      * @brief An internal implementation of Lz77Pattern.
      */
-    Lz77Prepend *patternPrepend;
+    std::shared_ptr<Lz77Prepend> patternPrepend;
 
     /**
      * @brief Boolean saying whether a pattern was found.
@@ -280,7 +285,12 @@ private:
          * @brief Internal implementation of CliArguments.
          * @details It's a pointer so Lz77CliArguments() can assign a new CliArguments object to it.
          */
-    CliArguments* cliArguments;
+    std::unique_ptr<CliArguments> cliArguments;
+
+    /**
+     * @brief Marker meaning the arguments are correct and the object is ready for execution
+     */
+    bool prepared;
 
 public:
     /**
@@ -295,5 +305,5 @@ public:
      * @brief Internal implementation of Lz77.
      * @details It's a pointer so Lz77CliArguments() can assign a new Lz77 to it.
      */
-    Lz77* lz77;
+    std::unique_ptr<Lz77> lz77;
     };
