@@ -1,3 +1,10 @@
+/**
+ * @file tCollectionUtilities.h
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Header file containing static methods handling collections.
+ * @version 1.0
+ */
+
 #include <vector>
 
 #pragma once
@@ -8,26 +15,19 @@
  */
 namespace TCollectionUtilities {
     /**
-     * @brief 
-     * 
-     * @param x 
-     * @return std::vector<char> 
+     * @brief Function converting a number to a vector of bits.
+     * @param x Number to convert.
+     * @return std::vector<char> Vector containing the number bits.
      */
     std::vector<char> bitVectorFromNumber(long x);
 
     /**
-     * @brief 
-     * 
-     * @param vector 
+     * @brief Function flipping a std::vector.
+     * @tparam T Type of values in the std::vector.
+     * @param vector std::vector to be flipped
      */
-    void flipCharVector(std::vector<char>& vector);
-
-    /**
-     * @brief 
-     * 
-     * @param vector 
-     */
-    void flipIntVector(std::vector<int>& vector);
+    template<typename T>
+    void flipVector(std::vector<T>& vector);
 
     /**
      * @brief 
@@ -35,5 +35,5 @@ namespace TCollectionUtilities {
      * @param bitVector 
      * @return long 
      */
-    long longFromBitVector(std::vector<int>& bitVector);
+    long longFromBitVector(std::vector<char>& bitVector);
     };

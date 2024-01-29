@@ -1,4 +1,10 @@
-/** @file */
+/**
+ * @file cli.h
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Header file containing objects used for running scripts from the command line.
+ * @version 1.2
+ * @date 2024-01-29
+ */
 
 #include <map>
 #include <string>
