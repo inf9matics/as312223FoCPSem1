@@ -1,3 +1,10 @@
+/**
+ * @file tStringUtilities.h
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Header file containing static methods handling strings.
+ * @version 1.0
+ */
+
 #include <string>
 
 #pragma once

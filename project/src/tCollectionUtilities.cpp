@@ -12,25 +12,23 @@ std::vector<char> TCollectionUtilities::bitVectorFromNumber(long x) {
     return bitVector;
     }
 
-void TCollectionUtilities::flipCharVector(std::vector<char>& vector) {
-    int vectorMiddle = (vector.size() - 1) / 2;
-    for (int i = 0; i <= vectorMiddle; i++) {
-        char temp = vector.at(i);
-        vector.at(i) = vector.at(vector.size() - 1 - i);
-        vector.at(vector.size() - 1 - i) = temp;
-        }
+template<typename T>
+void TCollectionUtilities::flipVector(std::vector<T>& vector){
+    auto beginningIterator = vector.begin();
+    auto endingIterator = vector.end();
+    endingIterator--;
+    T tempValue;
+    long halfVectorSize = vector.size() / 2;
+    while(std::prev(beginningIterator) != endingIterator && beginningIterator != endingIterator){
+        tempValue = *beginningIterator;
+        *beginningIterator = *endingIterator;
+        *endingIterator = tempValue;
+        beginningIterator++;
+        endingIterator--;
     }
+}
 
-void TCollectionUtilities::flipIntVector(std::vector<int>& vector) {
-    int vectorMiddle = (vector.size() - 1) / 2;
-    for (int i = 0; i <= vectorMiddle; i++) {
-        char temp = vector.at(i);
-        vector.at(i) = vector.at(vector.size() - 1 - i);
-        vector.at(vector.size() - 1 - i) = temp;
-        }
-    }
-
-long TCollectionUtilities::longFromBitVector(std::vector<int>& bitVector) {
+long TCollectionUtilities::longFromBitVector(std::vector<char>& bitVector) {
     long result = 0;
     for (int i = 0; i < bitVector.size(); i++) {
         result += bitVector.at(i) * std::pow(2, i);

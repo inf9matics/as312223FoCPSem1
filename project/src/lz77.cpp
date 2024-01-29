@@ -13,7 +13,7 @@
 #include "tMathUtilities.h"
 
 Lz77Prepend::Lz77Prepend(long patternDistance, long patternLength) {
-	if (patternLength != 0) {
+	if (patternDistance != 0) {
 		this->prependData.patternFound = true;
 		startingByte = 1 << 7;
 	} else {
@@ -41,14 +41,14 @@ void Lz77Prepend::prepareBitsVectorSepareted(std::vector<char> &bitsVector) {
 		tempVector.push_back(*it);
 		std::advance(it, 1);
 	}
-	this->bitsVectorSeparated.push_back(tempVector);
+	this->bitsVectorSeparatedPatternDistance.push_back(tempVector);
 	tempVector.clear();
 	while (it != bitsVector.end()) {
 		for (int i = 0; i < 7 && it != bitsVector.end(); i++) {
 			tempVector.push_back(*it);
 			std::advance(it, 1);
 		}
-		this->bitsVectorSeparated.push_back(tempVector);
+		this->bitsVectorSeparatedPatternDistance.push_back(tempVector);
 		tempVector.clear();
 	}
 }
@@ -72,24 +72,24 @@ void Lz77Prepend::createPrepend() {
 	this->prepareBitsVectorSepareted(numberBitVector);
 	numberBitVector.clear();
 	char currentByte = this->startingByte;
-	for (int i = 0; i < this->bitsVectorSeparated.at(0).size(); i++) {
-		currentByte += bitsVectorSeparated.at(0).at(i) << (5 - i);
+	for (int i = 0; i < this->bitsVectorSeparatedPatternDistance.at(0).size(); i++) {
+		currentByte += bitsVectorSeparatedPatternDistance.at(0).at(i) << (5 - i);
 	}
-	if (this->bitsVectorSeparated.size() > 1) {
+	if (this->bitsVectorSeparatedPatternDistance.size() > 1) {
 		currentByte += this->ongoingStartingByte;
 	}
 	this->bytesList.push_back(currentByte);
-	for (int i = 1; i < this->bitsVectorSeparated.size() - 1; i++) {
+	for (int i = 1; i < this->bitsVectorSeparatedPatternDistance.size() - 1; i++) {
 		currentByte = this->ongoingByte;
-		for (int j = 0; j < this->bitsVectorSeparated.at(i).size(); j++) {
-			currentByte += this->bitsVectorSeparated.at(i).at(j) << (6 - j);
+		for (int j = 0; j < this->bitsVectorSeparatedPatternDistance.at(i).size(); j++) {
+			currentByte += this->bitsVectorSeparatedPatternDistance.at(i).at(j) << (6 - j);
 		}
 		this->bytesList.push_back(currentByte);
 	}
 	currentByte = 0;
-	if (this->bitsVectorSeparated.size() > 1) {
-		for (int i = 0; i < this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).size(); i++) {
-			currentByte += this->bitsVectorSeparated.at(this->bitsVectorSeparated.size() - 1).at(i) << (6 - i);
+	if (this->bitsVectorSeparatedPatternDistance.size() > 1) {
+		for (int i = 0; i < this->bitsVectorSeparatedPatternDistance.at(this->bitsVectorSeparatedPatternDistance.size() - 1).size(); i++) {
+			currentByte += this->bitsVectorSeparatedPatternDistance.at(this->bitsVectorSeparatedPatternDistance.size() - 1).at(i) << (6 - i);
 		}
 		this->bytesList.push_back(currentByte);
 	}
@@ -119,8 +119,8 @@ int Lz77Prepend::size() { return this->bytesList.size(); }
 
 Lz77PrependData Lz77Prepend::prependDataFromIfstream(std::ifstream &inputFileStream) {
 	Lz77PrependData prependData;
-	std::vector<int> bitVector;
-	std::vector<int> patternLengthBitVector;
+	std::vector<char> bitVector;
+	std::vector<char> patternLengthBitVector;
 	char currentByte;
 	currentByte = inputFileStream.get();
 	prependData.patternFound = false;
@@ -392,12 +392,12 @@ Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte) {
 			matchesIterator++;
 		}
 		if (longestMatch.patternPrepend->length() < 2) {
-			longestMatch.patternPrepend = std::unique_ptr<Lz77Prepend>(new Lz77Prepend{1, 0});
+			longestMatch.patternPrepend = std::unique_ptr<Lz77Prepend>(new Lz77Prepend{0, 1});
 			longestMatch.patternBeginning = currentByte;
 			longestMatch.foundPattern = false;
 		}
 	} else {
-		longestMatch.patternPrepend = std::unique_ptr<Lz77Prepend>(new Lz77Prepend{1, 0});
+		longestMatch.patternPrepend = std::unique_ptr<Lz77Prepend>(new Lz77Prepend{0, 1});
 		longestMatch.patternBeginning = currentByte;
 		longestMatch.foundPattern = false;
 	}

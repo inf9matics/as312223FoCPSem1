@@ -1,11 +1,10 @@
-/** @file */
-
-//
-// lz77.h
-// lz77
-//
-// Created by Adam Strączek
-//
+/**
+ * @file lz77.h
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Header file containing objects governing compression using the Lz77 algorithm.
+ * @version 2.0
+ * @date 2024-01-29
+ */
 
 #include "cli.h"
 
@@ -61,33 +60,80 @@ struct Lz77PrependData {
 class Lz77Prepend {
 private:
     /**
-     * @brief List of bytes
-     * 
+     * @brief List of prepared prepend bytes.
      */
     std::list<char> bytesList;
-    std::vector<std::vector<char>> bitsVectorSeparated;
+
+    /**
+     * @brief A std::vector containing std::vector's of bits of #prependData->patternDistance.
+     */
+    std::vector<std::vector<char>> bitsVectorSeparatedPatternDistance;
+
+    /**
+     * @brief A std::vector containing std::vector's of bits of #prependData->patternLength.
+     */
     std::vector<std::vector<char>> bitsVectorSeparatedPatternLength;
+
+    /**
+     * @brief Internal structure containing prepend data.
+     */
     Lz77PrependData prependData;
+
+    /**
+     * @brief Byte containing the bits marking the start of a prepend.
+     */
     char startingByte;
+
+    /**
+     * @brief Byte containing the bits marking length of a prepend.
+     */
     char ongoingByte;
+
+    /**
+     * @brief Byte that's a combination of #startingByte and #ongoingByte.
+     */
     char ongoingStartingByte;
 
+    /**
+     * @brief Function preparing #bytesList.
+     */
     void createPrepend();
+
+    /**
+     * @brief Function setting #bitsVectorSeparatedPatternDistance.
+     * @param bitsVector Pattern distance in binary form stored as a std::vector<char>.
+     */
     void prepareBitsVectorSepareted(std::vector<char>& bitsVector);
+
+    /**
+     * @brief Function setting #bitsVectorSeparatedPatternLength
+     * @param bitsVector Pattern length in binary form stored as a std::vector<char>.
+     */
     void prepareBitsVectorSeparetedPatternLength(std::vector<char>& bitsVector);
 
 public:
+    /**
+     * @brief Constructor for the Lz77Prepend class.
+     * @details This constructor sets #startingByte, #ongoingByte, #ongoingStartingByte calls #createPrepend().
+     * @param patternDistance Distance to pattern.
+     * @param patternLength Length of pattern.
+     */
     Lz77Prepend(long patternDistance, long patternLength);
 
-
+    /**
+     * @brief Iterator for #bytesList.
+     */
     std::list<char>::iterator bytesListIterator;
 
-
+    /**
+     * @brief Function returning value from #bytesListIterator and advances it.
+     * @return char *#bytesListIterator.
+     */
     char next();
 
     /**
      * @brief Function returning the size of internal bytes container.
-     * @return int Size of #bytesList
+     * @return int Size of #bytesList.
      */
     int size();
 
@@ -142,7 +188,7 @@ struct Lz77Match {
 class Lz77 {
 private:
     /**
-     * @brief File reading buffer.
+     * @brief Internal file reading buffer.
      */
     char *inputFileStreamBuffer;
 
@@ -237,13 +283,18 @@ private:
 public:
     /**
      *  @brief Constructor for the Lz77 class.
-     *  @details This constructor prepares the object via cli handling.\n
-     *  The constructor will throw an exception and call CliArguments::getHelpDialog() in order to write a help message.
-     *  @param argc the number of arguments passed down from cli
-     *  @param argv the array containing cli arguments
+     *  @details This constructor reserver space for #inputFileStreamBuffer and sets parameters.
+     *  @param inputFileName Name of the input file.
+     *  @param outputFileName Name of the output file.
+     *  @param historyBufferSize Size of the data to keep in memory.
+     *  @param inputBufferSize Size of the maximum possible pattern.
      */
     Lz77(std::string inputFileName, std::string outputFileName, long historyBufferSize, long inputBufferSize);
 
+    /**
+     * @brief Destructor for the Lz77 class.
+     * @details This destructors removes internal pointers.
+     */
     ~Lz77();
 
     /**
@@ -294,18 +345,17 @@ private:
         };
         /**
          * @brief Internal implementation of CliArguments.
-         * @details It's a pointer so Lz77CliArguments() can assign a new CliArguments object to it.
          */
     std::unique_ptr<CliArguments> cliArguments;
 
     /**
-     * @brief Marker meaning the arguments are correct and the object is ready for execution
+     * @brief Variable marking that the arguments are correct and the object is ready for execution.
      */
     bool prepared;
 
 public:
     /**
-     * @brief Construct a new Lz77CliArguments object and run Lz77::compress() or Lz77::decompress()
+     * @brief Construct a new Lz77CliArguments object and run Lz77::compress() or Lz77::decompress().
      * @details It calls CliArguments() and Lz77() internally.
      * @param argc Cli argument count.
      * @param argv Cli argument table.
@@ -314,7 +364,6 @@ public:
 
     /**
      * @brief Internal implementation of Lz77.
-     * @details It's a pointer so Lz77CliArguments() can assign a new Lz77 to it.
      */
     std::unique_ptr<Lz77> lz77;
     };
