@@ -14,15 +14,15 @@
 Lz77Prepend::Lz77Prepend(long patternDistance, long patternLength) {
 	if (patternLength != 0) {
 		this->prependData.patternFound = true;
-		startingByte = 1 << 7;
+		startingByte = (char)-128;
 	} else {
 		this->prependData.patternFound = false;
 		startingByte = 0;
 	}
 	this->prependData.patternDistance = patternDistance;
 	this->prependData.patternLength = patternLength;
-	this->ongoingByte = 1 << 7;
-	this->ongoingStartingByte = 1 << 6;
+	this->ongoingByte = (char)-128;
+	this->ongoingStartingByte = (char)128;
 
 	this->createPrepend();
 
