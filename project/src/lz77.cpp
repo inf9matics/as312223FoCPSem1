@@ -1,5 +1,6 @@
 #include "lz77.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -14,15 +15,15 @@
 Lz77Prepend::Lz77Prepend(long patternDistance, long patternLength) {
 	if (patternLength != 0) {
 		this->prependData.patternFound = true;
-		startingByte = (char)-128;
+		startingByte = 1 << 7;
 	} else {
 		this->prependData.patternFound = false;
 		startingByte = (char)0;
 	}
 	this->prependData.patternDistance = patternDistance;
 	this->prependData.patternLength = patternLength;
-	this->ongoingByte = (char)-128;
-	this->ongoingStartingByte = (char)128;
+	this->ongoingByte = 1 << 7;
+	this->ongoingStartingByte = 1 << 6;
 
 	this->createPrepend();
 
@@ -181,18 +182,16 @@ Lz77PrependData Lz77Prepend::prependDataFromIfstream(std::ifstream &inputFileStr
 }
 
 void Lz77::openInputFile() {
-	try {
-		this->inputFileStream.open(this->inputFileName, std::ios::binary);
-	} catch (const std::ifstream::failure &e) {
-		std::cerr << e.what();
+	this->inputFileStream.open(this->inputFileName, std::ios::binary);
+	if (!this->inputFileStream.good()) {
+		throw this->outputFileStream.rdstate();
 	}
 }
 
 void Lz77::openOutputFile() {
-	try {
-		this->outputFileStream.open(this->outputFileName, std::ios::binary);
-	} catch (const std::ifstream::failure &e) {
-		std::cerr << e.what();
+	this->outputFileStream.open(this->outputFileName, std::ios::binary);
+	if (!this->outputFileStream.good()) {
+		throw this->outputFileStream.rdstate();
 	}
 }
 
@@ -202,32 +201,43 @@ Lz77::Lz77(std::string inputFileName, std::string outputFileName, long historyBu
 	this->historyBufferSize = historyBufferSize;
 	this->inputBufferSize = inputBufferSize;
 
-	this->bufferSize = this->historyBufferSize + this->inputBufferSize;
+	this->windowSize = this->historyBufferSize + this->inputBufferSize;
+
+	this->inputFileStreamBuffer = new char[this->windowSize * 256];
+	this->inputFileStream.rdbuf()->pubsetbuf(this->inputFileStreamBuffer, this->windowSize * 256);
+}
+
+Lz77::~Lz77(){
+	delete this->inputFileStreamBuffer;
 }
 
 bool Lz77::fillBuffer() {
-	if (this->inputFileStream.peek() == EOF) {
-		return false;
+	try {
+		if (this->inputFileStream.peek() == EOF) {
+			return false;
+		}
+		while (this->window.size() <= this->windowSize && this->inputFileStream.peek() != EOF) {
+			this->window.push_back(this->inputFileStream.get());
+		}
+		return true;
+	} catch (const std::ifstream::failure &e) {
+		throw e.what();
 	}
-	while (this->buffer.size() <= this->bufferSize && this->inputFileStream.peek() != EOF) {
-		this->buffer.push_back(this->inputFileStream.get());
-	}
-	return true;
 }
 
 void Lz77::compress() {
 	this->openInputFile();
 	this->openOutputFile();
 
-	this->buffer.clear();
+	this->window.clear();
 
 	this->fillBuffer();
 
 	long patternsWritten = 0;
 	long predictedDataSize = 0;
 
-	std::list<char>::iterator currentIterator = this->buffer.begin();
-	while (!this->buffer.empty() && currentIterator != this->buffer.end()) {
+	std::list<char>::iterator currentIterator = this->window.begin();
+	while (!this->window.empty() && currentIterator != this->window.end()) {
 		Lz77Match currentMatch = this->findLongestMatch(currentIterator);
 		if (!currentMatch.foundPattern) {
 			this->outputFileStream << (char)0;
@@ -240,21 +250,21 @@ void Lz77::compress() {
 				predictedDataSize++;
 			}
 			for (long i = 1; i < currentMatch.patternPrepend->length(); i++) {
-				if (std::next(currentIterator) != this->buffer.end()) {
+				if (std::next(currentIterator) != this->window.end()) {
 					currentIterator++;
 				}
-				this->buffer.pop_front();
+				this->window.pop_front();
 			}
 		}
 		currentIterator++;
-		if (!this->buffer.empty() && std::distance(this->buffer.begin(), currentIterator) >= this->historyBufferSize) {
-			this->buffer.pop_front();
+		if (std::distance(this->window.begin(), currentIterator) >= this->historyBufferSize) {
+			this->window.pop_front();
 		}
 		this->fillBuffer();
 	}
 
 	std::clog << "patternsWritten: " << patternsWritten << std::endl;
-	std::clog << "predictedDataSize: " << predictedDataSize;
+	std::clog << "predictedDataSize: " << predictedDataSize << std::endl;
 
 	this->inputFileStream.close();
 	this->outputFileStream.close();
@@ -264,7 +274,7 @@ void Lz77::decompress() {
 	this->openInputFile();
 	this->openOutputFile();
 
-	this->buffer.clear();
+	this->window.clear();
 
 	long patternsFound = 0;
 
@@ -272,23 +282,23 @@ void Lz77::decompress() {
 		Lz77PrependData prependData = Lz77Prepend::prependDataFromIfstream(this->inputFileStream);
 		if (prependData.patternFound) {
 			patternsFound++;
-			long patternDistanceFromBufferBeginning = this->buffer.size() - prependData.patternDistance;
-			std::list<char>::iterator writeIterator = this->buffer.begin();
+			long patternDistanceFromBufferBeginning = this->window.size() - prependData.patternDistance;
+			std::list<char>::iterator writeIterator = this->window.begin();
 			std::advance(writeIterator, patternDistanceFromBufferBeginning);
 			for (long i = 0; i < prependData.patternLength; i++) {
 				this->outputFileStream << *writeIterator;
-				this->buffer.push_back(*writeIterator);
+				this->window.push_back(*writeIterator);
 				writeIterator++;
-				if (this->buffer.size() >= this->bufferSize) {
-					this->buffer.pop_front();
+				if (this->window.size() >= this->windowSize) {
+					this->window.pop_front();
 				}
 			}
 		} else {
 			char byteToWrite = this->inputFileStream.get();
 			this->outputFileStream << byteToWrite;
-			this->buffer.push_back(byteToWrite);
-			if (this->buffer.size() >= this->bufferSize) {
-				this->buffer.pop_front();
+			this->window.push_back(byteToWrite);
+			if (this->window.size() >= this->windowSize) {
+				this->window.pop_front();
 			}
 		}
 	} while (this->inputFileStream.peek() != EOF);
@@ -309,8 +319,7 @@ Lz77CliArguments::Lz77CliArguments(int argc, char **argv) {
 			n = stol(this->cliArguments->at("-n"));
 		} catch (const std::invalid_argument) {
 			this->prepared = false;
-			std::cerr << "-nIncorrect";
-			std::cout << "-n needs to be a number";
+			std::cerr << "-nIncorrect" << std::endl;
 		}
 
 		long k;
@@ -318,57 +327,54 @@ Lz77CliArguments::Lz77CliArguments(int argc, char **argv) {
 			k = stol(this->cliArguments->at("-k"));
 		} catch (const std::invalid_argument) {
 			this->prepared = false;
-			std::cerr << "-kIncorrect";
-			std::clog << "-k needs to be a number";
+			std::cerr << "-kIncorrect" << std::endl;
 		}
 
 		if (this->prepared) {
 			this->lz77 = std::unique_ptr<Lz77>(new Lz77{this->cliArguments->at("-i"), this->cliArguments->at("-o"), n, k});
 			if (this->cliArguments->at("-t") == "c") {
-				std::clog << "Compressing";
+				std::clog << "Compressing" << std::endl;
 				this->lz77->compress();
 			} else if (this->cliArguments->at("-t") == "d") {
-				std::clog << "Decompressing";
+				std::clog << "Decompressing" << std::endl;
 				this->lz77->decompress();
 			} else {
-				std::cerr << "-tIncorrect";
-				std::clog << "-t needs to be either '-c' or '-d'";
+				std::cerr << "-tIncorrect" << std::endl;
 			}
 		}
-
-	} else {
-		this->prepared = false;
-		std::cerr << "notEnoughArguments";
 	}
 }
 
 Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte) {
 	std::list<Lz77Match> matches;
-	std::list<char>::iterator historyIterator = this->buffer.begin();
+	std::list<char>::iterator historyIterator = this->window.begin();
 	std::list<char>::iterator inputIterator = currentByte;
 	while (historyIterator != currentByte) {
-		if (*historyIterator == *currentByte) {
+		historyIterator = std::find(historyIterator, currentByte, *currentByte);
+		if (historyIterator != currentByte) {
 			long patternLength = 1;
 			long patternDistance = std::distance(historyIterator, currentByte);
-			std::list<char>::iterator historyIteratorCopy = historyIterator;
 			inputIterator = currentByte;
-			historyIteratorCopy++;
+			std::list<char>::iterator historyIteratorCopy = historyIterator;
 			inputIterator++;
-			while (inputIterator != this->buffer.end() && (*inputIterator == *historyIteratorCopy && patternLength < this->inputBufferSize)) {
+			historyIteratorCopy++;
+			while (inputIterator != this->window.end() && (*historyIteratorCopy == *inputIterator && patternLength < this->inputBufferSize)) {
 				patternLength++;
 				inputIterator++;
 				historyIteratorCopy++;
 			}
-			Lz77Match match;
-			match.patternBeginning = historyIterator;
-			match.patternPrepend = std::shared_ptr<Lz77Prepend>(new Lz77Prepend{patternDistance, patternLength});
-			match.foundPattern = true;
-			matches.push_back(match);
-			for (long i = 1; i < patternLength && std::next(historyIterator) != currentByte; i++) {
-				historyIterator++;
+			if (patternLength > 1) {
+				Lz77Match match;
+				match.foundPattern = true;
+				match.patternBeginning = historyIterator;
+				match.patternPrepend = std::unique_ptr<Lz77Prepend>(new Lz77Prepend{patternDistance, patternLength});
+				matches.push_back(match);
+				for (long i = 1; i < patternLength && std::next(historyIterator) != currentByte; i++) {
+					historyIterator++;
+				}
 			}
+			historyIterator++;
 		}
-		historyIterator++;
 	}
 
 	Lz77Match longestMatch;
