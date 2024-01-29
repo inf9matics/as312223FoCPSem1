@@ -11,7 +11,6 @@
 
 /**
  * @brief Namespace containing string utility functions.
- * @details @todo Fill details.
  */
 namespace TStringUtilities {
     /**

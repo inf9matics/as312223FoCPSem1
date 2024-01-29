@@ -11,7 +11,6 @@
 
 /**
  * @brief Namespace containing collection utility functions.
- * @details @todo Fill details
  */
 namespace TCollectionUtilities {
     /**
