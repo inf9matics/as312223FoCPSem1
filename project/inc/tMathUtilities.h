@@ -9,7 +9,6 @@
 
 /**
  * @brief Namespace containing math utilities
- * @details @todo Fill details
  */
 namespace TMathUtilities {
     /**
