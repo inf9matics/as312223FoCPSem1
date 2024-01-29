@@ -21,7 +21,6 @@ class CliArguments{
     private:
     /**
      * @brief Message to show when no arguments are present.
-     * @details @todo Implement setting it via CliArguments().
      */
     std::string helpDialog;
 
