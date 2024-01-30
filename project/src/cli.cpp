@@ -37,7 +37,7 @@ void CliArguments::prepareStringMap() {
 std::pair<bool, std::string> CliArguments::checkParemeters() {
 	if (this->cliArguments.size() == 0) {
 		std::clog << this->helpDialog;
-		return std::pair<bool, std::string>{false, NULL};
+		return std::pair<bool, std::string>{false, ""};
 	}
 
 	for (int i = 0; i < this->requiredParameters.size(); i++) {
@@ -46,7 +46,7 @@ std::pair<bool, std::string> CliArguments::checkParemeters() {
 			return std::pair<bool, std::string>{false, this->requiredParameters.at(i)};
 		}
 	}
-	return std::pair<bool, std::string>{true, NULL};
+	return std::pair<bool, std::string>{true, ""};
 }
 
 CliArguments::CliArguments(int argc, char **argv, std::vector<std::string> upstreamParameters, std::string helpDialog = "Lorem ipsum dolores") {
