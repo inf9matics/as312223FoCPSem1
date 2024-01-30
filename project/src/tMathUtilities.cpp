@@ -1,3 +1,11 @@
+/**
+ * @file tMathUtilities.cpp
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Source code file for the implementation of tMathUtilitiesUtilities.h.
+ * @version 1.0
+ */
+
+
 #include "tMathUtilities.h"
 
 #include <cmath>

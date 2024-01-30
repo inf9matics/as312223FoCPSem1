@@ -1,3 +1,10 @@
+/**
+ * @file tStringUtilities.cpp
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Source code file for the implementation of tStringUtilities.h.
+ * @version 1.0
+ */
+
 #include "tStringUtilities.h"
 #include "tMathUtilities.h"
 

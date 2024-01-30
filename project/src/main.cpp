@@ -1,3 +1,10 @@
+/**
+ * @file main.cpp
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Main runner for the project.
+ * @version 2.0
+ */
+
 #include "lz77.h"
 #include "tMathUtilities.h"
 #include "tStringUtilities.h"
