@@ -3,7 +3,6 @@
  * @author Adam Strączek (as312223@student.polsl.pl)
  * @brief Header file containing objects governing compression using the Lz77 algorithm.
  * @version 2.0
- * @date 2024-01-29
  */
 
 #include "cli.h"
@@ -226,14 +225,6 @@ private:
     bool fillBuffer();
 
     /**
-     * @brief Function clearing #window.
-     * @details It removes the first element of #window when it approaches #windowSize.
-     * @return true The function removed an element from #window. 
-     * @return false The funciton did nothing.
-     */
-    bool clearBuffer();
-
-    /**
      * @brief #inputFileStream file name.
      */
     std::string inputFileName;
@@ -296,14 +287,6 @@ public:
      * @details This destructors removes internal pointers.
      */
     ~Lz77();
-
-    /**
-     * @brief Function returning value of argument from cli.
-     * @details argument() returns the corresponding element from the internal map of #cliArguments.
-     * @param i (std::string)
-     * @return Value of #cliArguments map at key i (std::string)
-     */
-    std::string argument(std::string i);
 
     /**
      * @brief Function that compressed #inputFileStream and outputs it to #outputFileStream.

@@ -1,3 +1,10 @@
+/**
+ * @file cli.cpp
+ * @author Adam Strączek (as312223@student.polsl.pl)
+ * @brief Source code file for the implementation of cli.h.
+ * @version 1.2
+ */
+
 #include "cli.h"
 #include "tStringUtilities.h"
 
@@ -27,19 +34,19 @@ void CliArguments::prepareStringMap() {
 	}
 }
 
-bool CliArguments::checkParemeters() {
+std::pair<bool, std::string> CliArguments::checkParemeters() {
 	if (this->cliArguments.size() == 0) {
 		std::clog << this->helpDialog;
-		return false;
+		return std::pair<bool, std::string>{false, ""};
 	}
 
 	for (int i = 0; i < this->requiredParameters.size(); i++) {
 		if (this->cliArguments.count(this->requiredParameters.at(i)) == 0) {
 			std::clog << this->requiredParameters.at(i) << " missing" << std::endl;
-			return false;
+			return std::pair<bool, std::string>{false, this->requiredParameters.at(i)};
 		}
 	}
-	return true;
+	return std::pair<bool, std::string>{true, ""};
 }
 
 CliArguments::CliArguments(int argc, char **argv, std::vector<std::string> upstreamParameters, std::string helpDialog = "Lorem ipsum dolores") {
@@ -50,7 +57,7 @@ CliArguments::CliArguments(int argc, char **argv, std::vector<std::string> upstr
 
 	this->prepareStringMap();
 
-	this->prepared = this->checkParemeters();
+	this->prepared = this->checkParemeters().first;
 
 	this->helpDialog = helpDialog;
 

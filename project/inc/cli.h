@@ -3,7 +3,6 @@
  * @author Adam Strączek (as312223@student.polsl.pl)
  * @brief Header file containing objects used for running scripts from the command line.
  * @version 1.2
- * @date 2024-01-29
  */
 
 #include <map>
@@ -69,10 +68,10 @@ class CliArguments{
     /**
      * @brief Function to govern #prepared.
      * @details This function is based on #requiredParameters and #cliArguments; when a value from #requiredParameters is missing in key form in #cliArguments, it returns false.
-     * @return true All parameters are present in #cliArguments.
-     * @return false A parameter/Parameters are missing from #cliArguments.
+     * @return true All parameters are present in #cliArguments, std::pair->second is NULL.
+     * @return false A parameter/Parameters are missing from #cliArguments, std::pair->second is the first missing parameter or NULL if #cliArguments is empty.
      */
-    bool checkParemeters();
+    std::pair<bool, std::string> checkParemeters();
 
     public:
     /**
