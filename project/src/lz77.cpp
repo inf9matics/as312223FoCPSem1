@@ -203,17 +203,19 @@ bool Lz77::fillBuffer() {
 }
 
 void Lz77::openInputFile() {
-	this->inputFileStream.open(this->inputFileName, std::ios::binary);
-	if (!this->inputFileStream.good()) {
-		throw this->outputFileStream.rdstate();
-	}
+	try{
+        this->inputFileStream.open(this->inputFileName, std::ios::binary);
+    } catch(std::ios_base::failure &e) {
+        throw e.what();
+    }
 }
 
 void Lz77::openOutputFile() {
-	this->outputFileStream.open(this->outputFileName, std::ios::binary);
-	if (!this->outputFileStream.good()) {
-		throw this->outputFileStream.rdstate();
-	}
+	try{
+        this->outputFileStream.open(this->outputFileName, std::ios::binary);
+    } catch(std::ios_base::failure &e) {
+        throw e.what();
+    }
 }
 
 Lz77Match Lz77::findLongestMatch(std::list<char>::iterator currentByte) {
