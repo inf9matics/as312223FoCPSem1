@@ -139,7 +139,6 @@ public:
     /**
      * @brief Function used for Lz77::decompress().
      * @details It reads bytes from an std::ifstream object.\n 
-     * @todo Move this to Lz77.
      * @param inputFileStream passed from Lz77::inputFileStream.
      * @return Lz77PrependData prepend data.
      */
