@@ -23,7 +23,7 @@ void CliArguments::prepareStringMap() {
 				nextString = TStringUtilities::basicStringToString(this->cliArgumentsPointers[i+1]);
 				i++;
 			}
-			if(nextString.substr(0, 1) == "-" || nextString == ""){
+			if((nextString.substr(0, 1) == "-" || nextString == "") &&  i != this->cliArgumentsCount-1){
 				this->cliArguments[currentString] = "";
 				i--;
 			}
